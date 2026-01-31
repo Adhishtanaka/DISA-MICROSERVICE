@@ -23,6 +23,17 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final JwtService jwtService;
     private final UserDetailsService userDetailsService;
 
+    /**
+     * Filters incoming requests to authenticate users based on JWT tokens.
+     * Extracts the JWT from the Authorization header, validates it, and sets
+     * the authentication context if the token is valid.
+     *
+     * @param request the HTTP servlet request
+     * @param response the HTTP servlet response
+     * @param filterChain the filter chain to continue processing
+     * @throws ServletException if a servlet error occurs
+     * @throws IOException if an I/O error occurs
+     */
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
