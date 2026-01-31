@@ -25,7 +25,8 @@ public class SecurityConfig {
     /**
      * Configures the security filter chain for the application.
      * Disables CSRF protection, sets up HTTP request authorization rules,
-     * configures stateless session management, and adds the JWT authentication filter.
+     * configures stateless session management, and adds the JWT authentication
+     * filter.
      *
      * @param http the HttpSecurity object to configure
      * @return the configured SecurityFilterChain
@@ -37,8 +38,13 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(authz -> authz
                         .requestMatchers("/api/auth/register", "/api/auth/login", "/api/auth/validate").permitAll()
-                        .anyRequest().authenticated()
-                )
+                        .requestMatchers(
+                                "/swagger-ui/**",
+                                "/v3/api-docs/**",
+                                "/swagger-ui.html")
+                        .permitAll()
+
+                        .anyRequest().authenticated())
                 .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
