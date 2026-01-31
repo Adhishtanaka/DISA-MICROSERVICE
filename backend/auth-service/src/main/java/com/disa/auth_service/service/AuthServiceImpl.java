@@ -3,6 +3,7 @@ package com.disa.auth_service.service;
 import com.disa.auth_service.dto.LoginRequest;
 import com.disa.auth_service.dto.LoginResponse;
 import com.disa.auth_service.dto.RegisterRequest;
+import com.disa.auth_service.dto.UpdateUserRequest;
 import com.disa.auth_service.dto.UserProfileResponse;
 import com.disa.auth_service.entity.Role;
 import com.disa.auth_service.entity.User;
@@ -101,6 +102,58 @@ public class AuthServiceImpl implements AuthService {
                 user.getCreatedAt(),
                 user.getUpdatedAt()
         );
+    }
+
+    /**
+     * Updates the profile information for a user.
+     * Fetches the user, updates the fields, saves, and returns the updated profile.
+     *
+     * @param username the username of the user to update
+     * @param request the update request containing new user information
+     * @return UserProfileResponse containing the updated user's profile details
+     */
+    @Override
+    public UserProfileResponse updateUser(String username, UpdateUserRequest request) {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        // Check if email is being changed and if it's already taken by another user
+        if (!user.getEmail().equals(request.getEmail()) &&
+            userRepository.existsByEmail(request.getEmail())) {
+            throw new RuntimeException("Email already exists");
+        }
+
+        user.setEmail(request.getEmail());
+        user.setRole(request.getRole() != null ? request.getRole() : user.getRole());
+        user.setFullName(request.getFullName());
+        user.setPhoneNumber(request.getPhoneNumber());
+
+        userRepository.save(user);
+
+        return new UserProfileResponse(
+                user.getId(),
+                user.getUsername(),
+                user.getEmail(),
+                user.getRole(),
+                user.getFullName(),
+                user.getPhoneNumber(),
+                user.getCreatedAt(),
+                user.getUpdatedAt()
+        );
+    }
+
+    /**
+     * Deletes a user by username.
+     * Fetches the user and deletes it from the repository.
+     *
+     * @param username the username of the user to delete
+     */
+    @Override
+    public void deleteUser(String username) {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        userRepository.delete(user);
     }
 
     /**

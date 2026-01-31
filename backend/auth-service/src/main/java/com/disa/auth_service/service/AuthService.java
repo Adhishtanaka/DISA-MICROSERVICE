@@ -3,6 +3,7 @@ package com.disa.auth_service.service;
 import com.disa.auth_service.dto.LoginRequest;
 import com.disa.auth_service.dto.LoginResponse;
 import com.disa.auth_service.dto.RegisterRequest;
+import com.disa.auth_service.dto.UpdateUserRequest;
 import com.disa.auth_service.dto.UserProfileResponse;
 
 public interface AuthService {
@@ -29,6 +30,22 @@ public interface AuthService {
      * @return UserProfileResponse containing the user's profile details
      */
     UserProfileResponse getProfile(String username);
+
+    /**
+     * Updates the profile information for a user.
+     *
+     * @param username the username of the user to update
+     * @param request the update request containing new user information
+     * @return UserProfileResponse containing the updated user's profile details
+     */
+    UserProfileResponse updateUser(String username, UpdateUserRequest request);
+
+    /**
+     * Deletes a user by username.
+     *
+     * @param username the username of the user to delete
+     */
+    void deleteUser(String username);
 
     /**
      * Validates a JWT token.
