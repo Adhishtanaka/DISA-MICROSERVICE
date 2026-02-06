@@ -1,3 +1,11 @@
 spring:
   application:
     name: personnel-service
+  datasource:
+    url: jdbc:postgresql://localhost:5432/personal_service
+    username: postgres
+    password: postgres
+
+  jpa:
+    hibernate:
+      ddl-auto: update
