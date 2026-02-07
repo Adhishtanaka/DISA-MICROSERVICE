@@ -36,9 +36,6 @@ public class MedicalCondition {
     private List<PhysicalLimitation> physicalLimitations;
 
     @OneToMany(mappedBy = "medicalCondition", cascade = CascadeType.ALL)
-    private List<Document> medicalDocuments;
-
-    @OneToMany(mappedBy = "medicalCondition", cascade = CascadeType.ALL)
     private List<InjuryHistory> pastInjuries;
 
     @OneToMany(mappedBy = "medicalCondition", cascade = CascadeType.ALL)
