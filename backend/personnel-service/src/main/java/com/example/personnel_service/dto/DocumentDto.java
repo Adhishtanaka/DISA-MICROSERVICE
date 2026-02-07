@@ -1,5 +1,6 @@
 package com.example.personnel_service.dto;
 
+import java.time.LocalDateTime;
 import java.util.Date;
 
 public class DocumentDto {
@@ -10,5 +11,8 @@ public class DocumentDto {
     private Date issueDate;
     private Date expDate;
     private String issuedBy;
-    private String uploadedAt;
+
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
+    private boolean isDisabled;
 }

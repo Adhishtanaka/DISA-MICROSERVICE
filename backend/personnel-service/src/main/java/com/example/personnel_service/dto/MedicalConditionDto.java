@@ -1,5 +1,6 @@
 package com.example.personnel_service.dto;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 public class MedicalConditionDto {
@@ -12,4 +13,9 @@ public class MedicalConditionDto {
     private List<PhysicalLimitationDto> physicalLimitations;
     private List<DocumentDto> medicalDocuments;
     private List<InjuryHistoryDto> pastInjuries;
+    private List<MedicationDto> medications;
+
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
+    private boolean isDisabled;
 }

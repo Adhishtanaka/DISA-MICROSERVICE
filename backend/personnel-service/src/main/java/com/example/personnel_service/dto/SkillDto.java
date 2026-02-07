@@ -1,5 +1,6 @@
 package com.example.personnel_service.dto;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 public class SkillDto {
@@ -9,4 +10,9 @@ public class SkillDto {
     private String profession;
     private String level;
     private List<DocumentDto> certifications;
+
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
+    private boolean isDisabled;
+
 }

@@ -1,13 +1,14 @@
 package com.example.personnel_service.dto;
 
-import com.example.personnel_service.entity.EmergencyContact;
 import com.example.personnel_service.entity.Skill;
 
+import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
 
 public class PersonDto {
     private long id;
+    private String personalCode;
     private String firstName;
     private String lastName;
 
@@ -23,11 +24,15 @@ public class PersonDto {
 
     private MedicalConditionDto medicalCondition;
 
-    private List<Skill> skills;
+    private List<SkillDto> skills;
 
     private String status;
-    private Date shiftStartTime;
-    private Date shiftEndTime;
+    private LocalDateTime shiftStartTime;
+    private LocalDateTime shiftEndTime;
+
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
+    private boolean isDisabled;
 
 
 }
