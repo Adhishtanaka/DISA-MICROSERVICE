@@ -1,6 +1,6 @@
-package com.disaster.logistics.event;
+package com.disa.logistic_service.event;
 
-import com.disaster.logistics.service.MissionService;
+import com.disa.logistic_service.service.MissionService;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
