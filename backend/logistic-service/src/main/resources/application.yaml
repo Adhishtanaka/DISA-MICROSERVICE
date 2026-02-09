@@ -28,3 +28,12 @@ spring:
     port: 5672
     username: guest
     password: guest
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui
+  api-docs:
+    path: /api-docs
+  packages-to-scan: com.disa.logistic_service
+  paths-to-match: /api/**
+  default-flat-param-object: true
