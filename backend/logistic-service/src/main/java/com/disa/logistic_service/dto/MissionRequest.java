@@ -12,8 +12,11 @@ import lombok.NoArgsConstructor;
  */
 @Data
 public class MissionRequest {
+    @NotNull(message = "Mission type is required")
     private MissionType type;
+    @NotBlank(message = "Origin is required")
     private String origin;
+    @NotBlank(message = "Destination is required")
     private String destination;
     private String description;
     private String cargoDetails;

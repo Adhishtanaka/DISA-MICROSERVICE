@@ -11,5 +11,6 @@ import lombok.NoArgsConstructor;
  */
 @Data
 public class StatusUpdateRequest {
+    @NotNull(message = "Mission status is required")
     private MissionStatus status;
 }
