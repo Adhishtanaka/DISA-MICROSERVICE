@@ -1,16 +1,13 @@
-/*
- * TaskServiceApplication main class
- */
-package com.disa.task_service;
+package com.disa.logistic_service;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class TaskServiceApplication {
+public class LogisticServiceApplication {
 
 	public static void main(String[] args) {
-		SpringApplication.run(TaskServiceApplication.class, args);
+		SpringApplication.run(LogisticServiceApplication.class, args);
 	}
 
 }
