@@ -1,11 +1,13 @@
 server:
-  port: 8082
+  port: 8083
 
 spring:
+  application:
+    name: incident-service
   datasource:
-    url: jdbc:postgresql://localhost:5432/incident_db
-    username: disaster_admin
-    password: admin123
+    url: jdbc:postgresql://ep-sparkling-scene-a1monmzv-pooler.ap-southeast-1.aws.neon.tech:5432/neondb?sslmode=require&channel_binding=require
+    username: neondb_owner
+    password: npg_7efOlw9rLIFg
     driver-class-name: org.postgresql.Driver
   jpa:
     hibernate:
@@ -14,3 +16,8 @@ spring:
     properties:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
+  rabbitmq:
+    host: localhost
+    port: 5672
+    username: admin
+    password: admin123
