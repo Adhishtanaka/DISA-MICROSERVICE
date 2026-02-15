@@ -4,8 +4,20 @@ spring:
   datasource:
     url: jdbc:postgresql://localhost:5432/personnel_service
     username: postgres
-    password: postgres
+    password: 123
 
   jpa:
     hibernate:
       ddl-auto: update
+
+external:
+  task:
+    api:
+      url: https://api.example.com
+      token: your_api_token_here
+
+model:
+  gemini:
+    api:
+      url: https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent
+      key: AIzaSyAurBJHuI9t5RNPxi2HVTZzPb1Gmjp8fIc

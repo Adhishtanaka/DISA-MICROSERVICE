@@ -2,11 +2,27 @@ package com.example.personnel_service.service;
 
 import com.example.personnel_service.entity.Allergy;
 import com.example.personnel_service.repository.AllergyRepository;
+import org.springframework.stereotype.Service;
 
 import java.util.List;
 
+@Service
 public class AllergyService {
-    private AllergyRepository _allergyRepository;
+    private final AllergyRepository _allergyRepository;
+
+    public AllergyService(AllergyRepository allergyRepository) {
+        this._allergyRepository = allergyRepository;
+    }
+
+    public List<Allergy> getAllAllergies() {
+        return _allergyRepository.findAll();
+    }
+
+    public Allergy getAllergyById(Long id) {
+        return _allergyRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Allergy not found"));
+    }
+
     public List<Allergy> addAllergy(List<Allergy> allergy) {
         return _allergyRepository.saveAll(allergy);
     }
