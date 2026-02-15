@@ -14,7 +14,15 @@ public class AllergyService {
     public List<Allergy> updateAllergy(List<Allergy> allergy) {
         return _allergyRepository.saveAll(allergy);
     }
-    public Allergy deleteAllergy(Long id) {
-        return _allergyRepository.save(Allergy);
+    public Allergy softDeleteAllergy(Long id) {
+        Allergy allergy = _allergyRepository.findById(id).
+                orElseThrow(()-> new RuntimeException("Allergy not found"));
+        allergy.setDisabled(true);
+        return _allergyRepository.save(allergy);
+    }
+    public void deleteAllergy(long id) {
+        Allergy allergy = _allergyRepository.findById(id).
+                orElseThrow(()-> new RuntimeException("Allergy not found"));
+        _allergyRepository.delete(allergy);
     }
 }
