@@ -5,7 +5,7 @@ spring:
   application:
     name: assessment-service
   datasource:
-    url: jdbc:postgresql://neondb_owner:npg_wp8Te4WSLvGP@ep-morning-dust-ai82f4ju-pooler.c-4.us-east-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require
+    url: jdbc:postgresql://ep-morning-dust-ai82f4ju-pooler.c-4.us-east-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require
     username: neondb_owner
     password: npg_wp8Te4WSLvGP
     driver-class-name: org.postgresql.Driver
