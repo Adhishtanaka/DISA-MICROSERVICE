@@ -1,5 +1,7 @@
 /*
- * TaskEvent for task service
+ * TaskEvent is the message envelope published to RabbitMQ when a task changes state.
+ * Contains event metadata (type, timestamp) and a TaskPayload with task details
+ * consumed by downstream microservices such as notification or personnel services.
  */
 package com.disa.task_service.event;
 

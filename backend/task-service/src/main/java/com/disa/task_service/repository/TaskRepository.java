@@ -1,5 +1,7 @@
 /*
- * TaskRepository for task service
+ * TaskRepository provides data access operations for the Task entity via Spring Data JPA.
+ * Extends JpaRepository to inherit standard CRUD, pagination, and sorting capabilities
+ * backed by the configured PostgreSQL datasource.
  */
 package com.disa.task_service.repository;
 

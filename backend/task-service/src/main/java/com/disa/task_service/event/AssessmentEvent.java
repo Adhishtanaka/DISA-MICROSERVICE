@@ -1,5 +1,7 @@
 /*
- * AssessmentEvent for task service
+ * AssessmentEvent is the inbound message received from the assessment service
+ * via RabbitMQ when a disaster assessment is completed. The embedded payload
+ * contains required actions used to auto-generate follow-up response tasks.
  */
 package com.disa.task_service.event;
 

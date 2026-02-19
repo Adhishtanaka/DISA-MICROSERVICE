@@ -1,11 +1,12 @@
 /*
- * TaskResponse DTO for task service
+ * TaskResponse DTO returned to API consumers after task operations.
+ * Contains the full task details including current status and timestamps.
  */
 package com.disa.task_service.dto;
 
-import com.disa.task_service.entity.TaskType;
-import com.disa.task_service.entity.Priority;
-import com.disa.task_service.entity.TaskStatus;
+import com.disa.task_service.entity.enums.Priority;
+import com.disa.task_service.entity.enums.TaskStatus;
+import com.disa.task_service.entity.enums.TaskType;
 import lombok.Data;
 
 import java.time.LocalDateTime;

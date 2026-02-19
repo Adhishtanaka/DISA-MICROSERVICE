@@ -1,5 +1,6 @@
 /*
- * AssignTaskRequest DTO for task service
+ * AssignTaskRequest DTO carrying the personnel ID to whom a task should be assigned.
+ * Used in the PUT /tasks/{id}/assign endpoint to update task ownership and status.
  */
 package com.disa.task_service.dto;
 

@@ -1,8 +1,13 @@
 /*
- * Task entity for task service
+ * Task entity representing a disaster response task assigned to field personnel.
+ * Tracks the full lifecycle of a task from creation through assignment to completion,
+ * including metadata such as type, priority, location, and incident association.
  */
 package com.disa.task_service.entity;
 
+import com.disa.task_service.entity.enums.Priority;
+import com.disa.task_service.entity.enums.TaskStatus;
+import com.disa.task_service.entity.enums.TaskType;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -20,24 +25,24 @@ public class Task {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String taskCode; // TSK-401
+    private String taskCode;
 
     @Enumerated(EnumType.STRING)
-    private TaskType type; // RESCUE_OPERATION, MEDICAL_AID, DEBRIS_REMOVAL
+    private TaskType type;
 
     private String title;
     private String description;
 
     @Enumerated(EnumType.STRING)
-    private Priority priority; // LOW, MEDIUM, HIGH, URGENT
+    private Priority priority;
 
     private Long incidentId;
-    private Long assignedTo; // Personnel ID
+    private Long assignedTo;
 
     private String location;
 
     @Enumerated(EnumType.STRING)
-    private TaskStatus status; // PENDING, IN_PROGRESS, COMPLETED
+    private TaskStatus status;
 
     @CreationTimestamp
     private LocalDateTime createdAt;
