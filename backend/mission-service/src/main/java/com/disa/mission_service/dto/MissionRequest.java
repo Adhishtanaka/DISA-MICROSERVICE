@@ -1,5 +1,5 @@
 package com.disa.mission_service.dto;
-import com.disa.mission_service.entity.MissionType;
+import com.disa.mission_service.entity.enums.MissionType;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;

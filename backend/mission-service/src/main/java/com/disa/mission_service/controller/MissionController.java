@@ -3,8 +3,8 @@ package com.disa.mission_service.controller;
 import com.disa.mission_service.dto.MissionRequest;
 import com.disa.mission_service.dto.StatusUpdateRequest;
 import com.disa.mission_service.entity.Mission;
-import com.disa.mission_service.entity.MissionStatus;
-import com.disa.mission_service.entity.MissionType;
+import com.disa.mission_service.entity.enums.MissionStatus;
+import com.disa.mission_service.entity.enums.MissionType;
 import com.disa.mission_service.service.MissionService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -20,7 +20,7 @@ import java.util.List;
  * Documented via Swagger @Tag and @Operation annotations.
  */
 @RestController
-@RequestMapping("/api/missions")
+@RequestMapping("/missions")
 @RequiredArgsConstructor
 @Tag(name = "Missions", description = "Endpoints for managing logistics missions")
 @CrossOrigin(origins = "*") // Enable CORS for frontend

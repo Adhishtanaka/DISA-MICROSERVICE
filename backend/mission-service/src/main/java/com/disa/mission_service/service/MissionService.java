@@ -1,8 +1,8 @@
 package com.disa.mission_service.service;
 import com.disa.mission_service.dto.MissionRequest;
 import com.disa.mission_service.entity.Mission;
-import com.disa.mission_service.entity.MissionStatus;
-import com.disa.mission_service.entity.MissionType;
+import com.disa.mission_service.entity.enums.MissionStatus;
+import com.disa.mission_service.entity.enums.MissionType;
 import java.util.List;
 /**
  * Service interface for managing missions in the logistics service.

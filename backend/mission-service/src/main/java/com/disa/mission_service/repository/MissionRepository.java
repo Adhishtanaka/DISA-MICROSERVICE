@@ -2,8 +2,8 @@ package com.disa.mission_service.repository;
 import com.disa.mission_service.entity.Mission;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
-import com.disa.mission_service.entity.MissionType;
-import com.disa.mission_service.entity.MissionStatus;
+import com.disa.mission_service.entity.enums.MissionType;
+import com.disa.mission_service.entity.enums.MissionStatus;
 import java.util.List;
 /** * Repository interface for managing Mission entities in the logistics service.
  * This interface extends JpaRepository to provide CRUD operations and custom query methods for Mission entities.
