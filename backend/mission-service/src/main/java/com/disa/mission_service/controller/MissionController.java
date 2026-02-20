@@ -20,7 +20,7 @@ import java.util.List;
  * Documented via Swagger @Tag and @Operation annotations.
  */
 @RestController
-@RequestMapping("/api/missions")
+@RequestMapping("/missions")
 @RequiredArgsConstructor
 @Tag(name = "Missions", description = "Endpoints for managing logistics missions")
 @CrossOrigin(origins = "*") // Enable CORS for frontend
