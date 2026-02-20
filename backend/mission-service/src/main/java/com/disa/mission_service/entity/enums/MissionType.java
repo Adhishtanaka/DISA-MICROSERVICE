@@ -1,4 +1,5 @@
-package com.disa.mission_service.entity;
+package com.disa.mission_service.entity.enums;
+
 /**
  * Enumeration representing the types of missions in the logistics service.
  * This enum is used to categorize missions based on their nature and requirements.
