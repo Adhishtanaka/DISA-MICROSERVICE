@@ -1,5 +1,7 @@
 package com.disa.mission_service.entity;
 
+import com.disa.mission_service.entity.enums.MissionStatus;
+import com.disa.mission_service.entity.enums.MissionType;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;

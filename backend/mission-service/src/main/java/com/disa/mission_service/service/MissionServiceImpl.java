@@ -2,6 +2,8 @@ package com.disa.mission_service.service;
 
 import com.disa.mission_service.dto.MissionRequest;
 import com.disa.mission_service.entity.*;
+import com.disa.mission_service.entity.enums.MissionStatus;
+import com.disa.mission_service.entity.enums.MissionType;
 import com.disa.mission_service.repository.MissionRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
