@@ -1,0 +1,31 @@
+server:
+  port: ${SERVER_PORT:8761}
+
+spring:
+  config:
+    import: optional:file:.env[.properties]
+  application:
+    name: eureka-server
+
+# Eureka Server Configuration
+eureka:
+  instance:
+    hostname: localhost
+  client:
+    register-with-eureka: false   # Server should NOT register itself
+    fetch-registry: false         # Server does NOT fetch from another registry
+    service-url:
+      defaultZone: http://${eureka.instance.hostname}:${server.port}/eureka/
+  server:
+    enable-self-preservation: true
+    eviction-interval-timer-in-ms: 60000
+
+# Actuator
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: always
