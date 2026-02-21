@@ -31,3 +31,15 @@ build/
 
 ### VS Code ###
 .vscode/
+
+### Secrets ###
+.env
+application-local.yaml
+application-local.yml
+
+
+### Secrets ###
+.env
+application-local.yaml
+application-local.yml
+
