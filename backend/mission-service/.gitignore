@@ -36,3 +36,4 @@ build/
 .env
 application-local.yaml
 application-local.yml
+.env.example
