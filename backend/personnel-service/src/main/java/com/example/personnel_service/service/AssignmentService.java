@@ -16,6 +16,41 @@ import org.springframework.web.client.RestTemplate;
 import java.util.*;
 import java.util.stream.Collectors;
 
+/**
+ * Service for intelligently assigning disaster management tasks to available personnel
+ * using Google's Gemini AI for optimal matching.
+ *
+ * <p>This service provides AI-powered task assignment functionality that analyzes
+ * personnel qualifications, skills, availability, and task requirements to determine
+ * the most suitable person for each task.</p>
+ *
+ * <p><b>Key Features:</b></p>
+ * <ul>
+ *   <li>Filters available personnel based on status and enabled state</li>
+ *   <li>Identifies pending tasks requiring assignment</li>
+ *   <li>Uses Gemini AI to match tasks with personnel</li>
+ *   <li>Provides reasoning and confidence scores for each assignment</li>
+ *   <li>Supports batch assignment of multiple tasks</li>
+ *   <li>Includes fallback mechanism for error scenarios</li>
+ * </ul>
+ *
+ * <p><b>AI Matching Criteria:</b></p>
+ * <ul>
+ *   <li>Task type, priority, and location</li>
+ *   <li>Personnel role, skills, and experience</li>
+ *   <li>Rank and department alignment</li>
+ *   <li>Medical conditions (if relevant)</li>
+ *   <li>Current availability and shift timing</li>
+ * </ul>
+ *
+ * @author Disaster Management Center
+ * @version 1.0
+ * @since 2026-02-15
+ * @see PersonDto
+ * @see TaskDto
+ * @see TaskAssignmentDto
+ * @see TaskClient
+ */
 @Service
 public class AssignmentService {
 
@@ -30,6 +65,12 @@ public class AssignmentService {
     @Value("${model.gemini.api.key}")
     private String geminiApiKey;
 
+    /**
+     * Constructs a new AssignmentService with required dependencies.
+     *
+     * @param personService the service for managing personnel data
+     * @param taskClient the client for fetching task information
+     */
     public AssignmentService(PersonService personService, TaskClient taskClient) {
         this.personService = personService;
         this.taskClient = taskClient;
@@ -38,7 +79,16 @@ public class AssignmentService {
     }
 
     /**
-     * Get all available persons (status = "available" or "Available" and not disabled)
+     * Retrieves all available personnel who are eligible for task assignment.
+     *
+     * <p>Filters personnel based on the following criteria:</p>
+     * <ul>
+     *   <li>Status contains "available" (case-insensitive)</li>
+     *   <li>Not disabled (isDisabled = false)</li>
+     * </ul>
+     *
+     * @return a list of available personnel as PersonDto objects, never null
+     * @see PersonDto
      */
     public List<PersonDto> getAvailablePersons() {
         return personService.getAllPersons().stream()
@@ -50,7 +100,12 @@ public class AssignmentService {
     }
 
     /**
-     * Get all pending tasks (status = PENDING)
+     * Retrieves all pending tasks that require personnel assignment.
+     *
+     * <p>Filters tasks based on status = PENDING.</p>
+     *
+     * @return a list of pending tasks as TaskDto objects, never null
+     * @see TaskDto
      */
     public List<TaskDto> getPendingTasks() {
         return taskClient.fetchTasks().stream()
@@ -60,7 +115,24 @@ public class AssignmentService {
     }
 
     /**
-     * Match a single task with the most suitable person using Gemini AI
+     * Matches a single task with the most suitable person using Gemini AI.
+     *
+     * <p>This method performs the following steps:</p>
+     * <ol>
+     *   <li>Retrieves all available personnel</li>
+     *   <li>Builds a detailed prompt with task and personnel information</li>
+     *   <li>Calls Gemini AI API for intelligent matching</li>
+     *   <li>Parses the AI response to extract the selected person</li>
+     *   <li>Returns a TaskAssignmentDto with assignment details</li>
+     * </ol>
+     *
+     * <p>The AI considers multiple factors including skills, experience, role,
+     * rank, medical conditions, and current availability.</p>
+     *
+     * @param task the task to be assigned, must not be null
+     * @return a TaskAssignmentDto containing the assigned person, task, reasoning, and confidence score
+     * @throws RuntimeException if no available persons are found
+     * @see TaskAssignmentDto
      */
     public TaskAssignmentDto matchTaskToPerson(TaskDto task) {
         List<PersonDto> availablePersons = getAvailablePersons();
@@ -76,7 +148,21 @@ public class AssignmentService {
     }
 
     /**
-     * Match all pending tasks with suitable persons
+     * Matches all pending tasks with suitable personnel using batch processing.
+     *
+     * <p>This method iterates through all pending tasks and assigns each to the
+     * most suitable person. If an error occurs during assignment of a specific task,
+     * it logs the error and continues with the next task.</p>
+     *
+     * <p><b>Error Handling:</b></p>
+     * <ul>
+     *   <li>Individual task assignment failures are logged but don't stop the batch</li>
+     *   <li>Successfully assigned tasks are added to the result list</li>
+     *   <li>Failed assignments are skipped with error message logged to stderr</li>
+     * </ul>
+     *
+     * @return a list of TaskAssignmentDto objects for successfully assigned tasks
+     * @see TaskAssignmentDto
      */
     public List<TaskAssignmentDto> matchAllPendingTasks() {
         List<TaskDto> pendingTasks = getPendingTasks();
@@ -95,7 +181,22 @@ public class AssignmentService {
     }
 
     /**
-     * Build a detailed prompt for Gemini AI
+     * Builds a comprehensive prompt for Gemini AI with task and personnel details.
+     *
+     * <p>The prompt includes:</p>
+     * <ul>
+     *   <li>Task details: ID, code, type, title, description, priority, location</li>
+     *   <li>Personnel details: ID, name, role, department, rank, skills, medical conditions, status</li>
+     *   <li>Matching instructions and criteria</li>
+     *   <li>Expected JSON response format</li>
+     * </ul>
+     *
+     * <p>The prompt is structured to guide the AI to make optimal decisions based on
+     * disaster management requirements and personnel capabilities.</p>
+     *
+     * @param persons the list of available personnel to consider
+     * @param task the task requiring assignment
+     * @return a formatted string prompt for Gemini AI
      */
     private String buildPrompt(List<PersonDto> persons, TaskDto task) {
         StringBuilder prompt = new StringBuilder();
@@ -164,7 +265,30 @@ public class AssignmentService {
     }
 
     /**
-     * Call Gemini API with the prompt
+     * Calls the Gemini AI API with the prepared prompt and retrieves the response.
+     *
+     * <p>This method:</p>
+     * <ol>
+     *   <li>Constructs the API request body with prompt and generation config</li>
+     *   <li>Sets appropriate headers for JSON communication</li>
+     *   <li>Makes HTTP POST request to Gemini API endpoint</li>
+     *   <li>Validates the response status and content</li>
+     *   <li>Extracts text from the response structure</li>
+     *   <li>Includes comprehensive debug logging</li>
+     * </ol>
+     *
+     * <p><b>Configuration Parameters:</b></p>
+     * <ul>
+     *   <li>Temperature: 0.7 (balanced creativity and consistency)</li>
+     *   <li>TopK: 40 (token sampling parameter)</li>
+     *   <li>TopP: 0.95 (nucleus sampling parameter)</li>
+     *   <li>MaxOutputTokens: 2048 (maximum response length)</li>
+     *   <li>ResponseMimeType: application/json (forces JSON output)</li>
+     * </ul>
+     *
+     * @param prompt the formatted prompt string for Gemini AI
+     * @return the text response from Gemini AI
+     * @throws RuntimeException if API call fails or returns empty response
      */
     private String callGeminiApi(String prompt) {
         try {
@@ -236,7 +360,37 @@ public class AssignmentService {
     }
 
     /**
-     * Extract text content from Gemini API response
+     * Extracts text content from the Gemini API's structured JSON response.
+     *
+     * <p>This method navigates through the Gemini API response structure:</p>
+     * <pre>
+     * {
+     *   "candidates": [
+     *     {
+     *       "content": {
+     *         "parts": [
+     *           {
+     *             "text": "... extracted text ..."
+     *           }
+     *         ]
+     *       }
+     *     }
+     *   ]
+     * }
+     * </pre>
+     *
+     * <p>Includes error handling for:</p>
+     * <ul>
+     *   <li>Missing 'candidates' field</li>
+     *   <li>Empty candidates array</li>
+     *   <li>Missing nested fields</li>
+     *   <li>JSON parsing errors</li>
+     * </ul>
+     *
+     * @param responseBody the raw JSON response body from Gemini API
+     * @return the extracted text content from the response
+     * @throws RuntimeException if extraction fails or response structure is invalid
+     * @throws JsonProcessingException if JSON parsing fails
      */
     private String extractTextFromGeminiResponse(String responseBody) {
         try {
@@ -280,7 +434,35 @@ public class AssignmentService {
     }
 
     /**
-     * Parse Gemini's response and create TaskAssignmentDto
+     * Parses the Gemini AI response and creates a TaskAssignmentDto object.
+     *
+     * <p>This method performs the following operations:</p>
+     * <ol>
+     *   <li>Cleans the response by removing markdown formatting (```json, ```)</li>
+     *   <li>Trims trailing text after the JSON closing brace</li>
+     *   <li>Parses the JSON to extract personId, reason, and matchScore</li>
+     *   <li>Finds the selected person from the available persons list</li>
+     *   <li>Creates and returns a TaskAssignmentDto with all details</li>
+     * </ol>
+     *
+     * <p><b>Expected JSON Format:</b></p>
+     * <pre>
+     * {
+     *   "personId": 123,
+     *   "reason": "Best match because...",
+     *   "matchScore": 95.5
+     * }
+     * </pre>
+     *
+     * <p><b>Fallback Behavior:</b></p>
+     * <p>If parsing fails for any reason (malformed JSON, missing fields, etc.),
+     * the method automatically selects the first available person with a default
+     * match score of 50.0 and includes the error message in the reason.</p>
+     *
+     * @param geminiResponse the raw text response from Gemini AI
+     * @param availablePersons the list of available personnel to match against
+     * @param task the task being assigned
+     * @return a TaskAssignmentDto with assignment details, never null
      */
     private TaskAssignmentDto parseGeminiResponse(String geminiResponse, List<PersonDto> availablePersons, TaskDto task) {
         try {
@@ -358,7 +540,22 @@ public class AssignmentService {
     }
 
     /**
-     * Convert Person entity to PersonDto
+     * Converts a Person entity to a PersonDto data transfer object.
+     *
+     * <p>This method maps the following fields:</p>
+     * <ul>
+     *   <li>Basic info: id, personal code, names, contact details</li>
+     *   <li>Organizational: role, department, organization, rank</li>
+     *   <li>Status: status, shift times, created/updated timestamps</li>
+     *   <li>State: disabled flag</li>
+     * </ul>
+     *
+     * <p><b>Note:</b> This method does not map complex relationships like
+     * skills, medical conditions, or emergency contacts. If these are needed
+     * in the DTO, additional mapping logic should be added.</p>
+     *
+     * @param person the Person entity to convert
+     * @return a PersonDto with mapped data
      */
     private PersonDto convertToPersonDto(Person person) {
         PersonDto dto = new PersonDto();
