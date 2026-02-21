@@ -32,3 +32,15 @@ build/
 ### VS Code ###
 .vscode/
 .DS_Store
+
+### Secrets ###
+.env
+application-local.yaml
+application-local.yml
+
+
+### Secrets ###
+.env
+application-local.yaml
+application-local.yml
+

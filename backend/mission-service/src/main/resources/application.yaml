@@ -1,15 +1,17 @@
 server:
-  port: 8086
+  port: ${SERVER_PORT:8086}
 
 spring:
+  config:
+    import: optional:file:.env[.properties]
   application:
     name: mission-service
 
 
   datasource:
-    url: jdbc:postgresql://ep-little-sky-ai5kiu27-pooler.c-4.us-east-1.aws.neon.tech/neondb?sslmode=require
-    username: neondb_owner
-    password: npg_OHu1ViXpNQ9o
+    url: ${DB_URL}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
     driver-class-name: org.postgresql.Driver
 
   # jpa
@@ -24,11 +26,11 @@ spring:
 
   # rabbitmq
   rabbitmq:
-    host: moose.rmq.cloudamqp.com
-    port: 5672
-    username: dkptazsn
-    password: 8nA0q8-i2hUnq2ET1vDAXYq3-V1rIqEu
-    virtual-host: dkptazsn
+    host: ${RABBITMQ_HOST}
+    port: ${RABBITMQ_PORT:5672}
+    username: ${RABBITMQ_USERNAME}
+    password: ${RABBITMQ_PASSWORD}
+    virtual-host: ${RABBITMQ_VIRTUAL_HOST}
 
 springdoc:
   swagger-ui:
