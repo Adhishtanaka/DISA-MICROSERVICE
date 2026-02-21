@@ -10,7 +10,7 @@ RUN npm install -g pnpm
 COPY . .
 
 # Install ALL dependencies including devDependencies
-RUN pnpm install
+RUN CI=true pnpm install
 
 # Build with the API URL passed at build time
 ARG VITE_API_URL
