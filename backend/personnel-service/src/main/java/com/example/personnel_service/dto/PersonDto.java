@@ -9,6 +9,15 @@ import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
 
+/**
+ * Data Transfer Object for Person entity.
+ * Used to transfer person data between different layers of the application
+ * without exposing the internal entity structure.
+ * 
+ * @author DISA Team
+ * @version 1.0
+ * @since 2026-02-21
+ */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
