@@ -1,19 +1,16 @@
 # ─── Stage 1: Build ────────────────────────────────────────────────────────────
-FROM node:18-alpine AS builder
+FROM node:20-alpine AS builder
 
 WORKDIR /app
 
 # Install pnpm
 RUN npm install -g pnpm
 
-# Copy dependency files
-COPY package.json pnpm-lock.yaml ./
-
-# Install dependencies (include devDependencies for build)
-RUN pnpm install --frozen-lockfile --prod=false
-
-# Copy source
+# Copy all files first
 COPY . .
+
+# Install ALL dependencies including devDependencies
+RUN pnpm install
 
 # Build with the API URL passed at build time
 ARG VITE_API_URL
