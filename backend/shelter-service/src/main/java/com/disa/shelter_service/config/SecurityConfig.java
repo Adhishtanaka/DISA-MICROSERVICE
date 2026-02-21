@@ -6,7 +6,9 @@
  *
  * Current configuration:
  * - Disables CSRF protection (suitable for stateless REST APIs)
- * - Permits all incoming HTTP requests without authentication
+ * - Permits all incoming HTTP requests without authentication,
+ *   including Swagger UI (/swagger-ui.html, /swagger-ui/**) and
+ *   OpenAPI spec (/v3/api-docs/**) endpoints
  *
  * Note: This open configuration is intended for internal microservice
  * communication within a trusted network. In production, consider

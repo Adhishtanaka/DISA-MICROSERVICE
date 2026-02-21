@@ -25,26 +25,44 @@
 package com.disa.shelter_service.dto;
 
 import com.disa.shelter_service.entity.ShelterStatus;
+import io.swagger.v3.oas.annotations.media.Schema;
 
 import java.time.LocalDateTime;
 
+@Schema(description = "Response payload representing an emergency shelter")
 public class ShelterResponse {
 
+    @Schema(description = "Unique database identifier of the shelter", example = "1")
     private Long id;
+    @Schema(description = "Human-readable shelter code", example = "SHE-001")
     private String shelterCode;
+    @Schema(description = "Name of the shelter", example = "City Community Hall")
     private String name;
+    @Schema(description = "Physical address of the shelter", example = "123 Main Street, Colombo")
     private String address;
+    @Schema(description = "Geographic latitude of the shelter", example = "6.9271")
     private Double latitude;
+    @Schema(description = "Geographic longitude of the shelter", example = "79.8612")
     private Double longitude;
+    @Schema(description = "Maximum number of people the shelter can accommodate", example = "500")
     private Integer totalCapacity;
+    @Schema(description = "Current number of occupants", example = "120")
     private Integer currentOccupancy;
+    @Schema(description = "Remaining available capacity", example = "380")
     private Integer availableCapacity;
+    @Schema(description = "Percentage of capacity currently in use", example = "24.0")
     private Double occupancyPercentage;
+    @Schema(description = "Operational status of the shelter", example = "OPERATIONAL")
     private ShelterStatus status;
+    @Schema(description = "Name of the shelter contact person", example = "John Silva")
     private String contactPerson;
+    @Schema(description = "Phone number of the shelter contact", example = "+94771234567")
     private String contactNumber;
+    @Schema(description = "Available facilities at the shelter", example = "Medical aid, Food, Water, Sanitation")
     private String facilities;
+    @Schema(description = "Timestamp when the shelter record was created")
     private LocalDateTime createdAt;
+    @Schema(description = "Timestamp when the shelter record was last updated")
     private LocalDateTime updatedAt;
 
     public ShelterResponse() {}

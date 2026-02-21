@@ -20,34 +20,46 @@
 package com.disa.shelter_service.dto;
 
 import com.disa.shelter_service.entity.ShelterStatus;
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 
+@Schema(description = "Request payload for creating or updating an emergency shelter")
 public class ShelterRequest {
 
+    @Schema(description = "Name of the shelter", example = "City Community Hall", requiredMode = Schema.RequiredMode.REQUIRED)
     @NotBlank(message = "Name is required")
     private String name;
 
+    @Schema(description = "Physical address of the shelter", example = "123 Main Street, Colombo", requiredMode = Schema.RequiredMode.REQUIRED)
     @NotBlank(message = "Address is required")
     private String address;
 
+    @Schema(description = "Geographic latitude of the shelter location", example = "6.9271", requiredMode = Schema.RequiredMode.REQUIRED)
     @NotNull(message = "Latitude is required")
     private Double latitude;
 
+    @Schema(description = "Geographic longitude of the shelter location", example = "79.8612", requiredMode = Schema.RequiredMode.REQUIRED)
     @NotNull(message = "Longitude is required")
     private Double longitude;
 
+    @Schema(description = "Maximum number of people the shelter can accommodate", example = "500", requiredMode = Schema.RequiredMode.REQUIRED)
     @NotNull(message = "Total capacity is required")
     @Positive(message = "Total capacity must be positive")
     private Integer totalCapacity;
 
+    @Schema(description = "Current number of occupants (defaults to 0)", example = "0")
     private Integer currentOccupancy = 0;
 
+    @Schema(description = "Operational status of the shelter (defaults to OPERATIONAL)", example = "OPERATIONAL")
     private ShelterStatus status = ShelterStatus.OPERATIONAL;
 
+    @Schema(description = "Name of the shelter contact person", example = "John Silva")
     private String contactPerson;
+    @Schema(description = "Phone number of the shelter contact", example = "+94771234567")
     private String contactNumber;
+    @Schema(description = "Available facilities at the shelter (e.g., medical, food, water)", example = "Medical aid, Food, Water, Sanitation")
     private String facilities;
 
     public ShelterRequest() {}
