@@ -9,6 +9,14 @@ import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
 
+/**
+ * Entity representing a skill possessed by a person.
+ * Tracks professional expertise, experience level, and mission history.
+ * 
+ * @author DISA Team
+ * @version 1.0
+ * @since 2026-02-21
+ */
 @Entity
 @Data
 @NoArgsConstructor

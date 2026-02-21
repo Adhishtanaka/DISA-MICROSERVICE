@@ -10,6 +10,15 @@ import org.hibernate.annotations.UpdateTimestamp;
 import java.time.LocalDateTime;
 import java.util.List;
 
+/**
+ * Entity representing a Person in the personnel management system.
+ * Contains personal information, organizational details, medical conditions, skills,
+ * and emergency contacts for disaster management personnel.
+ * 
+ * @author DISA Team
+ * @version 1.0
+ * @since 2026-02-21
+ */
 @Entity
 @Data
 @NoArgsConstructor

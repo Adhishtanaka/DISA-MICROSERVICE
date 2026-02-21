@@ -10,6 +10,14 @@ import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
 
+/**
+ * Entity representing an Allergy associated with a person's medical condition.
+ * Tracks allergen types and specific allergy information for personnel.
+ * 
+ * @author DISA Team
+ * @version 1.0
+ * @since 2026-02-21
+ */
 @Entity
 @Data
 @NoArgsConstructor

@@ -11,6 +11,14 @@ import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
 
+/**
+ * Entity representing an emergency contact for personnel.
+ * Stores contact information and relationship details for emergency situations.
+ * 
+ * @author DISA Team
+ * @version 1.0
+ * @since 2026-02-21
+ */
 @Entity
 @Data
 @NoArgsConstructor

@@ -11,6 +11,15 @@ import org.hibernate.annotations.UpdateTimestamp;
 import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
+
+/**
+ * Entity representing a person's injury history record.
+ * Tracks past injuries, recovery status, restrictions, and related documents.
+ * 
+ * @author DISA Team
+ * @version 1.0
+ * @since 2026-02-21
+ */
 @Entity
 @Data
 @NoArgsConstructor

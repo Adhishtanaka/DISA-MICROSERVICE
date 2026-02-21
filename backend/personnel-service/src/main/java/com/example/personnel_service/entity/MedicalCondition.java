@@ -12,6 +12,15 @@ import org.hibernate.annotations.UpdateTimestamp;
 import java.time.LocalDateTime;
 import java.util.List;
 
+/**
+ * Entity representing a comprehensive medical condition record for personnel.
+ * Contains physical attributes, allergies, chronic conditions, physical limitations,
+ * injury history, and current medications.
+ * 
+ * @author DISA Team
+ * @version 1.0
+ * @since 2026-02-21
+ */
 @Entity
 @Data
 @NoArgsConstructor
