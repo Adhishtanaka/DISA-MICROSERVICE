@@ -2,9 +2,9 @@ spring:
   application:
     name: personnel-service
   datasource:
-    url: jdbc:postgresql://localhost:5432/personnel_service
-    username: postgres
-    password: 123
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:personnel_service}
+    username: ${DB_USERNAME:postgres}
+    password: ${DB_PASSWORD:123}
 
   jpa:
     hibernate:
@@ -13,11 +13,11 @@ spring:
 external:
   task:
     api:
-      url: https://api.example.com
-      token: your_api_token_here
+      url: ${TASK_API_URL:https://api.example.com}
+      token: ${TASK_API_TOKEN:your_api_token_here}
 
 model:
   gemini:
     api:
-      url: https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent
-      key: AIzaSyAurBJHuI9t5RNPxi2HVTZzPb1Gmjp8fIc
+      url: ${GEMINI_API_URL:https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent}
+      key: ${GEMINI_API_KEY}
