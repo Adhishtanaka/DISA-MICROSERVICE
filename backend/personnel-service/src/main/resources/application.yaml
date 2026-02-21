@@ -9,6 +9,31 @@ spring:
   jpa:
     hibernate:
       ddl-auto: update
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+  
+  # Jackson JSON configuration
+  jackson:
+    serialization:
+      indent-output: true
+    deserialization:
+      fail-on-unknown-properties: false
+    default-property-inclusion: non_null
+    time-zone: UTC
+
+  web:
+    error:
+      include-message: always
+      include-binding-errors: always
+      include-stacktrace: on_param
+      include-exception: false
+
+# Server configuration
+server:
+  port: 8080
 
 external:
   task:
