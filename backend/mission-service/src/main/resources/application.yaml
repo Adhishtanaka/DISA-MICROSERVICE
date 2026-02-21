@@ -24,10 +24,11 @@ spring:
 
   # rabbitmq
   rabbitmq:
-    host: localhost
+    host: moose.rmq.cloudamqp.com
     port: 5672
-    username: guest
-    password: guest
+    username: dkptazsn
+    password: 8nA0q8-i2hUnq2ET1vDAXYq3-V1rIqEu
+    virtual-host: dkptazsn
 
 springdoc:
   swagger-ui:
