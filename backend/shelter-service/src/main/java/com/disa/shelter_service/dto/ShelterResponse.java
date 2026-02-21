@@ -1,3 +1,27 @@
+/**
+ * ShelterResponse.java
+ *
+ * Data Transfer Object (DTO) representing the response payload returned to clients
+ * when querying shelter information from the Shelter Service.
+ *
+ * Fields:
+ *   - id                  : Unique database identifier of the shelter
+ *   - shelterCode         : Human-readable shelter code (e.g., SHE-001)
+ *   - name                : Name of the shelter
+ *   - address             : Physical address of the shelter
+ *   - latitude            : Geographic latitude coordinate
+ *   - longitude           : Geographic longitude coordinate
+ *   - totalCapacity       : Maximum number of people the shelter can accommodate
+ *   - currentOccupancy    : Current number of occupants
+ *   - availableCapacity   : Remaining capacity (totalCapacity - currentOccupancy)
+ *   - occupancyPercentage : Percentage of capacity currently in use
+ *   - status              : Operational status (OPERATIONAL, FULL, CLOSED, UNDER_PREPARATION)
+ *   - contactPerson       : Name of the shelter contact person
+ *   - contactNumber       : Phone number of the shelter contact
+ *   - facilities          : Description of available facilities
+ *   - createdAt           : Timestamp when the shelter record was created
+ *   - updatedAt           : Timestamp when the shelter record was last updated
+ */
 package com.disa.shelter_service.dto;
 
 import com.disa.shelter_service.entity.ShelterStatus;

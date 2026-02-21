@@ -1,3 +1,23 @@
+/**
+ * ShelterController.java
+ *
+ * REST controller for the Shelter Service, exposing HTTP endpoints for managing
+ * emergency shelters within the DISA platform.
+ *
+ * Base URL: /api/shelters
+ *
+ * Endpoints:
+ *   POST   /api/shelters              - Create a new shelter
+ *   GET    /api/shelters              - Retrieve all shelters
+ *   GET    /api/shelters/{id}         - Retrieve a shelter by ID
+ *   GET    /api/shelters/available    - Retrieve all available shelters
+ *   GET    /api/shelters/nearby       - Retrieve shelters within a given radius
+ *   PUT    /api/shelters/{id}         - Update shelter details
+ *   POST   /api/shelters/{id}/checkin  - Check in a number of people to a shelter
+ *   POST   /api/shelters/{id}/checkout - Check out a number of people from a shelter
+ *   PUT    /api/shelters/{id}/status  - Update the operational status of a shelter
+ *   DELETE /api/shelters/{id}         - Delete a shelter
+ */
 package com.disa.shelter_service.controller;
 
 import com.disa.shelter_service.dto.CheckInRequest;

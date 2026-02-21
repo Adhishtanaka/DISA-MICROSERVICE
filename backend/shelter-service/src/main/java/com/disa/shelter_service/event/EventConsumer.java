@@ -1,3 +1,17 @@
+/**
+ * EventConsumer.java
+ *
+ * RabbitMQ message consumer for the Shelter Service.
+ * Listens to the "incident.created.queue" and processes incoming incident events
+ * published by other DISA microservices (e.g., Incident Service).
+ *
+ * When an incident is created, this consumer:
+ *   1. Extracts the incident location (latitude, longitude) and severity from the event payload
+ *   2. Delegates to ShelterService to identify and prepare nearby shelters
+ *
+ * This component is conditionally loaded only when "spring.rabbitmq.enabled" is true.
+ * Errors during event processing are caught and logged to prevent message queue disruption.
+ */
 package com.disa.shelter_service.event;
 
 import com.disa.shelter_service.service.ShelterService;

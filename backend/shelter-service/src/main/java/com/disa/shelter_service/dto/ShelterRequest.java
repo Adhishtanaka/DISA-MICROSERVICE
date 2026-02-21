@@ -1,3 +1,22 @@
+/**
+ * ShelterRequest.java
+ *
+ * Data Transfer Object (DTO) for creating or updating a shelter resource.
+ * Carries all the necessary input data from the client to the Shelter Service
+ * for POST (create) and PUT (update) operations.
+ *
+ * Fields:
+ *   - name            : Shelter name (required)
+ *   - address         : Physical address of the shelter (required)
+ *   - latitude        : Geographic latitude coordinate (required)
+ *   - longitude       : Geographic longitude coordinate (required)
+ *   - totalCapacity   : Maximum number of people the shelter can accommodate (required, positive)
+ *   - currentOccupancy: Current number of occupants (defaults to 0)
+ *   - status          : Operational status of the shelter (defaults to OPERATIONAL)
+ *   - contactPerson   : Name of the shelter contact person
+ *   - contactNumber   : Phone number of the shelter contact
+ *   - facilities      : Description of available facilities (e.g., medical, food, water)
+ */
 package com.disa.shelter_service.dto;
 
 import com.disa.shelter_service.entity.ShelterStatus;

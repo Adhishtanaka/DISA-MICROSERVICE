@@ -1,3 +1,22 @@
+/**
+ * ShelterServiceImpl.java
+ *
+ * Implementation of the ShelterService interface, providing the core business logic
+ * for managing emergency shelters in the DISA platform.
+ *
+ * Responsibilities:
+ *   - Creating shelters with auto-generated shelter codes (e.g., SHE-001)
+ *   - Retrieving all shelters or a specific shelter by ID
+ *   - Updating shelter details and operational status
+ *   - Deleting shelters
+ *   - Retrieving available shelters (OPERATIONAL or UNDER_PREPARATION)
+ *   - Finding shelters within a geographic radius using simplified distance calculation
+ *   - Processing check-in and check-out operations, updating occupancy and status accordingly
+ *   - Preparing nearby shelters when an incident event is received via RabbitMQ
+ *
+ * Distance calculation uses a simplified Euclidean approximation (not Haversine).
+ * The default nearby radius is 50 km.
+ */
 package com.disa.shelter_service.service;
 
 import com.disa.shelter_service.dto.ShelterRequest;

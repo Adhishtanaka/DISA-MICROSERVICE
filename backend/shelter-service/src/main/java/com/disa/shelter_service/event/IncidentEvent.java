@@ -1,3 +1,17 @@
+/**
+ * IncidentEvent.java
+ *
+ * Represents a domain event message received from the RabbitMQ message broker,
+ * published by the Incident Service when a new incident is created.
+ *
+ * This event is consumed by the Shelter Service's EventConsumer to trigger
+ * shelter preparation workflows in response to nearby incidents.
+ *
+ * Fields:
+ *   - eventType : Type identifier of the event (e.g., "incident.created")
+ *   - timestamp : Date and time when the event was published
+ *   - payload   : Detailed incident data encapsulated in an IncidentPayload object
+ */
 package com.disa.shelter_service.event;
 
 import java.time.LocalDateTime;

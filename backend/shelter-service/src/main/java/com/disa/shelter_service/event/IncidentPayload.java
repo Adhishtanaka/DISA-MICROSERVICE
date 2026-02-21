@@ -1,3 +1,23 @@
+/**
+ * IncidentPayload.java
+ *
+ * Represents the data payload embedded within an IncidentEvent message received
+ * from the RabbitMQ message broker. Contains detailed information about a newly
+ * created incident published by the Incident Service.
+ *
+ * This payload is used by the Shelter Service to determine which shelters are
+ * geographically close to the incident and should be prepared for evacuees.
+ *
+ * Fields:
+ *   - incidentId   : Unique identifier of the incident
+ *   - incidentCode : Human-readable incident code (e.g., INC-001)
+ *   - type         : Category/type of the incident (e.g., flood, fire)
+ *   - severity     : Severity level of the incident (e.g., LOW, MEDIUM, HIGH, CRITICAL)
+ *   - latitude     : Geographic latitude of the incident location
+ *   - longitude    : Geographic longitude of the incident location
+ *   - address      : Physical address of the incident
+ *   - description  : Detailed description of the incident
+ */
 package com.disa.shelter_service.event;
 
 public class IncidentPayload {

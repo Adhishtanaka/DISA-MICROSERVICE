@@ -1,3 +1,18 @@
+/**
+ * RabbitMQConfig.java
+ *
+ * Configuration class for RabbitMQ messaging infrastructure used by the Shelter Service.
+ * Defines the topic exchange, queues, bindings, and message converters required for
+ * event-driven communication with other DISA microservices.
+ *
+ * This configuration is conditionally loaded only when the property
+ * "spring.rabbitmq.enabled" is set to "true", allowing the service to run
+ * without RabbitMQ in environments where messaging is not required.
+ *
+ * Exchange  : disaster.topic.exchange (TopicExchange)
+ * Queue     : incident.created.queue
+ * Routing   : incident.created
+ */
 package com.disa.shelter_service.config;
 
 import org.springframework.amqp.core.*;

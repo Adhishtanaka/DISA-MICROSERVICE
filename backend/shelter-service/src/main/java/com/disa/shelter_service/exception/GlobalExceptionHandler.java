@@ -1,3 +1,17 @@
+/**
+ * GlobalExceptionHandler.java
+ *
+ * Centralized exception handler for the Shelter Service REST API.
+ * Uses Spring's @RestControllerAdvice to intercept and handle exceptions
+ * thrown across all controllers, returning structured JSON error responses.
+ *
+ * Handled exceptions:
+ *   - RuntimeException               : Returns HTTP 400 Bad Request with the exception message
+ *   - MethodArgumentNotValidException: Returns HTTP 400 Bad Request with field-level validation errors
+ *   - Exception (generic)            : Returns HTTP 500 Internal Server Error with a generic message
+ *
+ * All error responses include a timestamp, HTTP status code, error type, and message/details.
+ */
 package com.disa.shelter_service.exception;
 
 import org.slf4j.Logger;

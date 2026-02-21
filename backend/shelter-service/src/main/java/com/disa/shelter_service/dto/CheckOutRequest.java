@@ -1,3 +1,13 @@
+/**
+ * CheckOutRequest.java
+ *
+ * Data Transfer Object (DTO) representing a check-out request for a shelter.
+ * Used to capture the number of people being checked out from a specific shelter
+ * via the POST /api/shelters/{id}/checkout endpoint.
+ *
+ * Validation:
+ *   - numberOfPeople: must not be null and must be a positive integer
+ */
 package com.disa.shelter_service.dto;
 
 import jakarta.validation.constraints.NotNull;

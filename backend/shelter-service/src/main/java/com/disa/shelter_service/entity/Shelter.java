@@ -1,3 +1,20 @@
+/**
+ * Shelter.java
+ *
+ * JPA entity representing an emergency shelter in the DISA platform.
+ * Mapped to the "shelter" database table and managed by the Shelter Service.
+ *
+ * Each shelter has a unique auto-generated ID and a human-readable shelter code
+ * (e.g., SHE-001). It tracks location (latitude/longitude), capacity, current
+ * occupancy, operational status, contact information, and available facilities.
+ *
+ * Timestamps (createdAt, updatedAt) are automatically managed by Hibernate.
+ *
+ * Helper methods:
+ *   - getAvailableCapacity()    : Returns remaining capacity
+ *   - isFull()                  : Returns true if occupancy has reached total capacity
+ *   - getOccupancyPercentage()  : Returns occupancy as a percentage of total capacity
+ */
 package com.disa.shelter_service.entity;
 
 import jakarta.persistence.*;
