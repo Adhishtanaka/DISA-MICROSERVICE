@@ -1,5 +1,6 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router';
-import { MissionsPage } from '../features/missions';
+import { BrowserRouter, Routes, Route, Navigate } from "react-router";
+import { MissionsPage } from "../features/missions";
+import { IncidentsPage } from "../features/incidents";
 
 export function AppRouter() {
   return (
@@ -7,6 +8,7 @@ export function AppRouter() {
       <Routes>
         <Route path="/" element={<Navigate to="/missions" replace />} />
         <Route path="/missions" element={<MissionsPage />} />
+        <Route path="/incidents" element={<IncidentsPage />} />
         <Route path="*" element={<NotFoundPage />} />
       </Routes>
     </BrowserRouter>
