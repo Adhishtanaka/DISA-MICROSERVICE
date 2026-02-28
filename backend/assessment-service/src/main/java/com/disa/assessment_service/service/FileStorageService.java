@@ -37,7 +37,6 @@ public class FileStorageService {
                 throw new RuntimeException("Invalid file path");
             }
             
-            // Generate unique filename
             String fileExtension = originalFilename.substring(originalFilename.lastIndexOf("."));
             String newFilename = UUID.randomUUID().toString() + fileExtension;
             

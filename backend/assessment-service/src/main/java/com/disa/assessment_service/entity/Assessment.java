@@ -11,7 +11,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Entity
-@Table(name = "assessments")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -20,14 +19,14 @@ public class Assessment {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     
-    private String assessmentCode; // ASS-201
+    private String assessmentCode;
     
     private Long incidentId;
     private Long assessorId;
     private String assessorName;
     
     @Enumerated(EnumType.STRING)
-    private DamageSeverity severity; // MINOR, MODERATE, SEVERE, CRITICAL
+    private DamageSeverity severity;
     
     @Column(length = 2000)
     private String findings;
@@ -35,21 +34,20 @@ public class Assessment {
     @Column(length = 1000)
     private String recommendations;
     
-    @ElementCollection
+    @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "assessment_required_actions", 
                     joinColumns = @JoinColumn(name = "assessment_id"))
     @Column(name = "action")
-    private List<String> requiredActions = new ArrayList<>(); 
-    // RESCUE, MEDICAL_AID, DEBRIS_REMOVAL, STRUCTURAL_REPAIR, etc.
+    private List<String> requiredActions = new ArrayList<>();
     
-    @ElementCollection
+    @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "assessment_photos", 
                     joinColumns = @JoinColumn(name = "assessment_id"))
     @Column(name = "photo_url")
     private List<String> photoUrls = new ArrayList<>();
     
     @Enumerated(EnumType.STRING)
-    private AssessmentStatus status; // DRAFT, COMPLETED
+    private AssessmentStatus status;
     
     private Integer estimatedCasualties;
     private Integer estimatedDisplaced;

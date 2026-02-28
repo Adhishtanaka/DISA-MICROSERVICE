@@ -1,0 +1,57 @@
+spring:
+  application:
+    name: personnel-service
+  datasource:
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:personnel_service}
+    username: ${DB_USERNAME:postgres}
+    password: ${DB_PASSWORD:123}
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+  
+  # Jackson JSON configuration
+  jackson:
+    serialization:
+      indent-output: true
+    deserialization:
+      fail-on-unknown-properties: false
+    default-property-inclusion: non_null
+    time-zone: UTC
+
+  web:
+    error:
+      include-message: always
+      include-binding-errors: always
+      include-stacktrace: on_param
+      include-exception: false
+
+  # RabbitMQ configuration
+  rabbitmq:
+    host: ${RABBITMQ_HOST:localhost}
+    port: ${RABBITMQ_PORT:5672}
+    username: ${RABBITMQ_USERNAME:admin}
+    password: ${RABBITMQ_PASSWORD:admin123}
+
+# Server configuration
+server:
+  port: 8084
+
+jwt:
+  secret: ${JWT_SECRET}
+
+external:
+  task:
+    api:
+      url: ${TASK_API_URL:http://localhost:8088/api/v1}
+
+model:
+  gemini:
+    api:
+      url: ${GEMINI_API_URL:https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent}
+      key: ${GEMINI_API_KEY}
