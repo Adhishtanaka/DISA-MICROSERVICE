@@ -11,28 +11,12 @@ import org.springframework.context.annotation.Configuration;
 public class RabbitMQConfig {
     
     public static final String EXCHANGE_NAME = "disaster.topic.exchange";
-    
-    // Queue names
     public static final String ASSESSMENT_COMPLETED_QUEUE = "assessment.completed.queue";
-    
-    // Routing keys
     public static final String ASSESSMENT_COMPLETED_KEY = "assessment.completed";
     
     @Bean
     public TopicExchange exchange() {
-        return new TopicExchange(EXCHANGE_NAME, true, false);
-    }
-    
-    @Bean
-    public Queue assessmentCompletedQueue() {
-        return new Queue(ASSESSMENT_COMPLETED_QUEUE, true);
-    }
-    
-    @Bean
-    public Binding assessmentCompletedBinding(Queue assessmentCompletedQueue, TopicExchange exchange) {
-        return BindingBuilder.bind(assessmentCompletedQueue)
-                .to(exchange)
-                .with(ASSESSMENT_COMPLETED_KEY);
+        return new TopicExchange(EXCHANGE_NAME);
     }
     
     @Bean

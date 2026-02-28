@@ -27,6 +27,7 @@ public class AssessmentServiceImpl implements AssessmentService {
     @Transactional
     public Assessment createAssessment(AssessmentRequest request) {
         Assessment assessment = new Assessment();
+        assessment.setAssessmentCode(generateAssessmentCode());
         assessment.setIncidentId(request.getIncidentId());
         assessment.setAssessorId(request.getAssessorId());
         assessment.setAssessorName(request.getAssessorName());
@@ -38,11 +39,9 @@ public class AssessmentServiceImpl implements AssessmentService {
         assessment.setEstimatedDisplaced(request.getEstimatedDisplaced());
         assessment.setAffectedInfrastructure(request.getAffectedInfrastructure());
         assessment.setStatus(request.getStatus() != null ? request.getStatus() : AssessmentStatus.DRAFT);
-        assessment.setAssessmentCode(generateAssessmentCode());
         
         Assessment saved = assessmentRepository.save(assessment);
-        log.info("Assessment created: {} for incident: {}", saved.getAssessmentCode(), saved.getIncidentId());
-        
+        log.info("Created assessment: {}", saved.getAssessmentCode());
         return saved;
     }
     
@@ -68,16 +67,14 @@ public class AssessmentServiceImpl implements AssessmentService {
     }
     
     @Override
-    public List<Assessment> getAssessmentsByAssessor(Long assessorId) {
-        return assessmentRepository.findByAssessorId(assessorId);
-    }
-    
-    @Override
     @Transactional
     public Assessment updateAssessment(Long id, AssessmentRequest request) {
         Assessment assessment = getAssessmentById(id);
         
-        assessment.setAssessorName(request.getAssessorName());
+        if (assessment.getStatus() == AssessmentStatus.COMPLETED) {
+            throw new RuntimeException("Cannot update completed assessment");
+        }
+        
         assessment.setSeverity(request.getSeverity());
         assessment.setFindings(request.getFindings());
         assessment.setRecommendations(request.getRecommendations());
@@ -86,10 +83,7 @@ public class AssessmentServiceImpl implements AssessmentService {
         assessment.setEstimatedDisplaced(request.getEstimatedDisplaced());
         assessment.setAffectedInfrastructure(request.getAffectedInfrastructure());
         
-        Assessment updated = assessmentRepository.save(assessment);
-        log.info("Assessment updated: {}", updated.getAssessmentCode());
-        
-        return updated;
+        return assessmentRepository.save(assessment);
     }
     
     @Override
@@ -106,7 +100,6 @@ public class AssessmentServiceImpl implements AssessmentService {
         
         Assessment completed = assessmentRepository.save(assessment);
         
-        // Publish event to trigger task creation
         eventPublisher.publishAssessmentCompleted(completed);
         
         log.info("Assessment completed and event published: {}", assessment.getAssessmentCode());
@@ -123,11 +116,7 @@ public class AssessmentServiceImpl implements AssessmentService {
         String photoUrl = "/uploads/" + filename;
         
         assessment.getPhotoUrls().add(photoUrl);
-        Assessment updated = assessmentRepository.save(assessment);
-        
-        log.info("Photo uploaded for assessment: {}", assessment.getAssessmentCode());
-        
-        return updated;
+        return assessmentRepository.save(assessment);
     }
     
     @Override
@@ -135,11 +124,11 @@ public class AssessmentServiceImpl implements AssessmentService {
     public void deleteAssessment(Long id) {
         Assessment assessment = getAssessmentById(id);
         assessmentRepository.delete(assessment);
-        log.info("Assessment deleted: {}", assessment.getAssessmentCode());
+        log.info("Deleted assessment: {}", assessment.getAssessmentCode());
     }
     
     private String generateAssessmentCode() {
         long count = assessmentRepository.count();
-        return String.format("ASS-%05d", count + 1);
+        return String.format("ASS-%03d", count + 1);
     }
 }
