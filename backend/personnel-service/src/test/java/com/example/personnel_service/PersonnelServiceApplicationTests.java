@@ -8,6 +8,7 @@ import org.springframework.boot.test.context.SpringBootTest;
  * It contains unit tests to ensure the application behaves as expected.
  */
 @SpringBootTest
+@org.springframework.test.context.ActiveProfiles("test")
 class PersonnelServiceApplicationTests {
 
 	@Test
