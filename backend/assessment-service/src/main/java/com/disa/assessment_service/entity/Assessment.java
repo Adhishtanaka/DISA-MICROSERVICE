@@ -34,13 +34,13 @@ public class Assessment {
     @Column(length = 1000)
     private String recommendations;
     
-    @ElementCollection
+    @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "assessment_required_actions", 
                     joinColumns = @JoinColumn(name = "assessment_id"))
     @Column(name = "action")
     private List<String> requiredActions = new ArrayList<>();
     
-    @ElementCollection
+    @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "assessment_photos", 
                     joinColumns = @JoinColumn(name = "assessment_id"))
     @Column(name = "photo_url")
