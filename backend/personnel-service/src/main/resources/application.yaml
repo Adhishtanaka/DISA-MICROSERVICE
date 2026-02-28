@@ -31,9 +31,16 @@ spring:
       include-stacktrace: on_param
       include-exception: false
 
+  # RabbitMQ configuration
+  rabbitmq:
+    host: ${RABBITMQ_HOST:localhost}
+    port: ${RABBITMQ_PORT:5672}
+    username: ${RABBITMQ_USERNAME:admin}
+    password: ${RABBITMQ_PASSWORD:admin123}
+
 # Server configuration
 server:
-  port: 8080
+  port: 8084
 
 external:
   task:
