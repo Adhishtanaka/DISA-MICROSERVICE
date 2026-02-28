@@ -19,7 +19,6 @@ import java.util.List;
  */
 @RestController
 @RequestMapping("/api/personnel/physical-limitations")
-@CrossOrigin(origins = "*", maxAge = 3600)
 public class PhysicalLimitationController {
     private final PhysicalLimitationService physicalLimitationService;
 

@@ -19,7 +19,6 @@ import java.util.List;
  */
 @RestController
 @RequestMapping("/api/personnel/injury-histories")
-@CrossOrigin(origins = "*", maxAge = 3600)
 public class InjuryHistoryController {
     private final InjuryService injuryService;
 

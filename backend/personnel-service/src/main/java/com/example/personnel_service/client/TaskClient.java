@@ -17,9 +17,24 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Client class for fetching task data.
+ * Currently provides mock task data for disaster management operations.
+ * In production, this would integrate with the Task Service microservice.
+ * 
+ * @author DISA Team
+ * @version 1.0
+ * @since 2026-02-21
+ */
 @Component
 public class TaskClient {
 
+    /**
+     * Fetches a list of tasks from the task service.
+     * Currently returns mock data for testing purposes.
+     * 
+     * @return list of TaskDto objects representing disaster management tasks
+     */
     public List<TaskDto> fetchTasks() {
 
         List<TaskDto> tasks = new ArrayList<>();
@@ -50,6 +65,17 @@ public class TaskClient {
         return tasks;
     }
 
+    /**
+     * Helper method to create a TaskDto with the specified parameters.
+     * 
+     * @param id the unique identifier for the task
+     * @param code the task code (e.g., TSK-401)
+     * @param type the type of task (RESCUE_OPERATION, MEDICAL_AID, DEBRIS_REMOVAL)
+     * @param priority the priority level of the task
+     * @param location the location where the task needs to be performed
+     * @param status the current status of the task
+     * @return a fully configured TaskDto object
+     */
     private TaskDto task(long id, String code,
                          TaskTypeDto type, PriorityDto priority,
                          String location, TaskStatusDto status) {

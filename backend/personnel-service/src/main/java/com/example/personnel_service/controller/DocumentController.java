@@ -19,7 +19,6 @@ import java.util.List;
  */
 @RestController
 @RequestMapping("/api/personnel/documents")
-@CrossOrigin(origins = "*", maxAge = 3600)
 public class DocumentController {
     private final DocumentService documentService;
 

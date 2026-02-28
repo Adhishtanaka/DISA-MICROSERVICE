@@ -19,7 +19,6 @@ import java.util.List;
  */
 @RestController
 @RequestMapping("/api/personnel/skills")
-@CrossOrigin(origins = "*", maxAge = 3600)
 public class SkillController {
     private final SkillService skillService;
 

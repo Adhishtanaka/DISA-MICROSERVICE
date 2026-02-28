@@ -19,7 +19,6 @@ import java.util.List;
  */
 @RestController
 @RequestMapping("/api/personnel/allergies")
-@CrossOrigin(origins = "*", maxAge = 3600)
 public class AllergyController {
     private final AllergyService allergyService;
 

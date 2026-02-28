@@ -19,7 +19,6 @@ import java.util.List;
  */
 @RestController
 @RequestMapping("/api/personnel/emergency-contacts")
-@CrossOrigin(origins = "*", maxAge = 3600)
 public class EmergencyContactController {
     private final EmergencyContactService emergencyContactService;
 
