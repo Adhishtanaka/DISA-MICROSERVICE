@@ -3,18 +3,83 @@ import { MissionsPage } from "../features/missions";
 import { IncidentsPage } from "../features/incidents";
 import { AssessmentsPage } from "../features/assessments";
 import { SheltersPage } from "../features/shelters";
+import { TasksPage } from "../features/tasks";
+import { LoginPage, RegisterPage, useAuthStore } from "../features/auth";
 import { Navigation } from "../components/Navigation";
+
+function ProtectedRoute({ children }: { children: React.ReactNode }) {
+  const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
+  if (!isAuthenticated) return <Navigate to="/login" replace />;
+  return <>{children}</>;
+}
+
+function AppLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <>
+      <Navigation />
+      {children}
+    </>
+  );
+}
 
 export function AppRouter() {
   return (
     <BrowserRouter>
-      <Navigation />
       <Routes>
-        <Route path="/" element={<Navigate to="/missions" replace />} />
-        <Route path="/missions" element={<MissionsPage />} />
-        <Route path="/incidents" element={<IncidentsPage />} />
-        <Route path="/assessments" element={<AssessmentsPage />} />
-        <Route path="/shelters" element={<SheltersPage />} />
+        {/* Public routes */}
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/register" element={<RegisterPage />} />
+
+        {/* Protected routes */}
+        <Route
+          path="/"
+          element={
+            <ProtectedRoute>
+              <Navigate to="/missions" replace />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/missions"
+          element={
+            <ProtectedRoute>
+              <AppLayout><MissionsPage /></AppLayout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/incidents"
+          element={
+            <ProtectedRoute>
+              <AppLayout><IncidentsPage /></AppLayout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/assessments"
+          element={
+            <ProtectedRoute>
+              <AppLayout><AssessmentsPage /></AppLayout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/shelters"
+          element={
+            <ProtectedRoute>
+              <AppLayout><SheltersPage /></AppLayout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/tasks"
+          element={
+            <ProtectedRoute>
+              <AppLayout><TasksPage /></AppLayout>
+            </ProtectedRoute>
+          }
+        />
+
         <Route path="*" element={<NotFoundPage />} />
       </Routes>
     </BrowserRouter>
