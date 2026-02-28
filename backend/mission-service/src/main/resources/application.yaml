@@ -26,11 +26,11 @@ spring:
 
   # rabbitmq
   rabbitmq:
-    host: ${RABBITMQ_HOST}
+    host: ${RABBITMQ_HOST:moose.rmq.cloudamqp.com}
     port: ${RABBITMQ_PORT:5672}
-    username: ${RABBITMQ_USERNAME}
-    password: ${RABBITMQ_PASSWORD}
-    virtual-host: ${RABBITMQ_VIRTUAL_HOST}
+    username: ${RABBITMQ_USERNAME:dkptazsn}
+    password: ${RABBITMQ_PASSWORD:8nA0q8-i2hUnq2ET1vDAXYq3-V1rIqEu}
+    virtual-host: ${RABBITMQ_VIRTUAL_HOST:dkptazsn}
 
 springdoc:
   swagger-ui:
