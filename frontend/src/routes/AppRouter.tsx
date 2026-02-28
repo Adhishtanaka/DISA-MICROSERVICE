@@ -2,15 +2,19 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router";
 import { MissionsPage } from "../features/missions";
 import { IncidentsPage } from "../features/incidents";
 import { AssessmentsPage } from "../features/assessments";
+import { SheltersPage } from "../features/shelters";
+import { Navigation } from "../components/Navigation";
 
 export function AppRouter() {
   return (
     <BrowserRouter>
+      <Navigation />
       <Routes>
         <Route path="/" element={<Navigate to="/missions" replace />} />
         <Route path="/missions" element={<MissionsPage />} />
         <Route path="/incidents" element={<IncidentsPage />} />
         <Route path="/assessments" element={<AssessmentsPage />} />
+        <Route path="/shelters" element={<SheltersPage />} />
         <Route path="*" element={<NotFoundPage />} />
       </Routes>
     </BrowserRouter>
