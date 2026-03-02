@@ -50,9 +50,9 @@ export function AppRouter() {
         <Route
           path="/incidents"
           element={
-            <ProtectedRoute>
+            
               <AppLayout><IncidentsPage /></AppLayout>
-            </ProtectedRoute>
+           
           }
         />
         <Route
