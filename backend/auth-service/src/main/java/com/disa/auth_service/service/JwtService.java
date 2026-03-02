@@ -9,6 +9,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
+import java.nio.charset.StandardCharsets;
+
 import java.security.Key;
 import java.util.Date;
 import java.util.HashMap;
@@ -148,12 +150,11 @@ public class JwtService {
     }
 
     /**
-     * Generates the signing key from the base64-encoded secret.
+     * Generates the signing key from the secret string.
      *
      * @return the HMAC-SHA key for signing JWT tokens
      */
     private Key getSignInKey() {
-        byte[] keyBytes = Decoders.BASE64.decode(secret);
-        return Keys.hmacShaKeyFor(keyBytes);
+        return Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
     }
 }
