@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { incidentApi } from "../api/incidentApi";
-import { Incident } from "../types/incident.types";
+import type { Incident } from "../types/incident.types";
 
 export function useIncidents() {
   const [incidents, setIncidents] = useState<Incident[]>([]);

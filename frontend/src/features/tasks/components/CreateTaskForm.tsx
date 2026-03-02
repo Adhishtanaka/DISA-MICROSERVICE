@@ -2,21 +2,19 @@ import { useState } from 'react';
 import { Input } from '../../../components/ui/Input';
 import { Button } from '../../../components/ui/Button';
 import { Select } from '../../../components/ui/Select';
-import type { TaskRequest, TaskType, Priority } from '../types/task.types';
+import type { TaskRequest } from '../types/task.types';
 
 const typeOptions = [
   { value: 'RESCUE_OPERATION', label: 'Rescue Operation' },
   { value: 'MEDICAL_AID', label: 'Medical Aid' },
   { value: 'DEBRIS_REMOVAL', label: 'Debris Removal' },
-  { value: 'SUPPLY_DELIVERY', label: 'Supply Delivery' },
-  { value: 'EVACUATION', label: 'Evacuation' },
 ];
 
 const priorityOptions = [
   { value: 'LOW', label: 'Low' },
   { value: 'MEDIUM', label: 'Medium' },
   { value: 'HIGH', label: 'High' },
-  { value: 'CRITICAL', label: 'Critical' },
+  { value: 'URGENT', label: 'Urgent' },
 ];
 
 interface CreateTaskFormProps {

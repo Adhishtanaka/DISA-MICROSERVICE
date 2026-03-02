@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { CreateAssessmentRequest, DamageSeverity } from "../types/assessment.types";
+import type { CreateAssessmentRequest, DamageSeverity } from "../types/assessment.types";
 
 interface CreateAssessmentFormProps {
   onSubmit: (data: CreateAssessmentRequest) => void;

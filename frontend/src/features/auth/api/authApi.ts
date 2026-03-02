@@ -1,7 +1,9 @@
 import axios from 'axios';
 import type { LoginRequest, LoginResponse, RegisterRequest, UpdateUserRequest, UserProfile } from '../types/auth.types';
 
-const api = axios.create({ baseURL: import.meta.env.VITE_AUTH_SERVICE_URL });
+const api = axios.create({
+  baseURL: import.meta.env.VITE_AUTH_SERVICE_URL || 'http://localhost:8081/api/auth',
+});
 
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem('auth_token');

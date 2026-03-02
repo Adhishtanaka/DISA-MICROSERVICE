@@ -1,11 +1,9 @@
 export type TaskType =
   | 'RESCUE_OPERATION'
   | 'MEDICAL_AID'
-  | 'DEBRIS_REMOVAL'
-  | 'SUPPLY_DELIVERY'
-  | 'EVACUATION';
+  | 'DEBRIS_REMOVAL';
 
-export type Priority = 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
+export type Priority = 'LOW' | 'MEDIUM' | 'HIGH' | 'URGENT';
 
 export type TaskStatus = 'PENDING' | 'IN_PROGRESS' | 'COMPLETED';
 

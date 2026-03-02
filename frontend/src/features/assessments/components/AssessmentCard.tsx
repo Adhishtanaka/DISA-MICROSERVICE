@@ -1,4 +1,4 @@
-import { Assessment } from "../types/assessment.types";
+import type { Assessment } from "../types/assessment.types";
 
 interface AssessmentCardProps {
   assessment: Assessment;

@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { Shelter } from "../types/shelter.types";
+import { useState } from "react";
+import type { Shelter } from "../types/shelter.types";
 import { shelterApi } from "../api/shelterApi";
 
 interface ShelterDetailProps {

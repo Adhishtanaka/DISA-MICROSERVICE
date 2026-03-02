@@ -3,7 +3,7 @@ import { useAssessments } from "../hooks/useAssessments";
 import { assessmentApi } from "../api/assessmentApi";
 import AssessmentCard from "../components/AssessmentCard";
 import CreateAssessmentForm from "../components/CreateAssessmentForm";
-import { CreateAssessmentRequest } from "../types/assessment.types";
+import type { CreateAssessmentRequest } from "../types/assessment.types";
 
 export default function AssessmentsPage() {
   const { assessments, loading, error, refetch } = useAssessments();

@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { assessmentApi } from "../api/assessmentApi";
-import { Assessment } from "../types/assessment.types";
+import type { Assessment } from "../types/assessment.types";
 
 export function useAssessments() {
   const [assessments, setAssessments] = useState<Assessment[]>([]);
