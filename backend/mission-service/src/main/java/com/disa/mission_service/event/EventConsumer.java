@@ -24,7 +24,7 @@ public class EventConsumer {
     /**
      * Listens for new incidents and creates a standard delivery mission.
      */
-    @RabbitListener(queues = "incident.created.queue")
+    @RabbitListener(queues = "mission.incident.created.queue")
     public void handleIncidentCreated(IncidentEvent event) {
         log.info("Received incident.created event: {}", event);
         try {
@@ -41,7 +41,7 @@ public class EventConsumer {
     /**
      * Listens for incident escalations and creates an urgent rescue mission.
      */
-    @RabbitListener(queues = "incident.escalated.queue")
+    @RabbitListener(queues = "mission.incident.escalated.queue")
     public void handleIncidentEscalated(IncidentEscalatedEvent event) {
         log.info("Received incident.escalated event: {}", event);
         try {
@@ -57,7 +57,7 @@ public class EventConsumer {
     /**
      * Listens for low resource alerts and creates a restocking mission.
      */
-    @RabbitListener(queues = "resource.critical_low.queue")
+    @RabbitListener(queues = "mission.resource.critical_low.queue")
     public void handleResourceCriticalLow(ResourceEvent event) {
         log.info("Received resource.critical_low event: {}", event);
         try {

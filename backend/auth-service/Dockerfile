@@ -16,11 +16,11 @@ WORKDIR /app
 
 RUN addgroup -S appgroup && adduser -S appuser -G appgroup
 
-COPY --from=builder /app/target/shelter-service-0.0.1-SNAPSHOT.jar app.jar
+COPY --from=builder /app/target/auth-service-0.0.1-SNAPSHOT.jar app.jar
 
 USER appuser
 
-EXPOSE 8085
+EXPOSE 8081
 
 ENTRYPOINT ["java", \
   "-XX:+UseContainerSupport", \

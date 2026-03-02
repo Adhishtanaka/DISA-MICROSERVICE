@@ -16,10 +16,10 @@ public class RabbitMQConfig {
 
     public static final String EXCHANGE_NAME = "disaster.topic.exchange";
 
-    // Queue Names
-    public static final String INCIDENT_CREATED_QUEUE = "incident.created.queue";
-    public static final String INCIDENT_ESCALATED_QUEUE = "incident.escalated.queue";
-    public static final String RESOURCE_LOW_QUEUE = "resource.critical_low.queue";
+    // Queue Names — service-specific prefix avoids competing consumers with shelter-service
+    public static final String INCIDENT_CREATED_QUEUE = "mission.incident.created.queue";
+    public static final String INCIDENT_ESCALATED_QUEUE = "mission.incident.escalated.queue";
+    public static final String RESOURCE_LOW_QUEUE = "mission.resource.critical_low.queue";
 
     // Routing Keys
     public static final String INCIDENT_CREATED_KEY = "incident.created";

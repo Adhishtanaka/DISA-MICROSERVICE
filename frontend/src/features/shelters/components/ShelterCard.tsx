@@ -1,5 +1,5 @@
-import React from "react";
-import { Shelter } from "../types/shelter.types";
+
+import type { Shelter } from "../types/shelter.types";
 
 interface ShelterCardProps {
   shelter: Shelter;

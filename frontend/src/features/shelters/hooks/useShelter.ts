@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { shelterApi } from "../api/shelterApi";
-import { Shelter } from "../types/shelter.types";
+import type { Shelter } from "../types/shelter.types";
 
 export function useShelter(id: number | null) {
   const [shelter, setShelter] = useState<Shelter | null>(null);

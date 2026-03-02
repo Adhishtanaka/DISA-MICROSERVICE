@@ -1,13 +1,13 @@
 server:
-  port: 8083
+  port: 8089
 
 spring:
   application:
     name: resource-service
   datasource:
-    url: ${DB_URL}
-    username: ${DB_USERNAME}
-    password: ${DB_PASSWORD}
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/resource_db}
+    username: ${DB_USERNAME:postgres}
+    password: ${DB_PASSWORD:postgres}
     driver-class-name: org.postgresql.Driver
   jpa:
     hibernate:
@@ -17,15 +17,16 @@ spring:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
   rabbitmq:
-    host: ${RABBITMQ_HOST}
-    port: ${RABBITMQ_PORT}
-    username: ${RABBITMQ_USERNAME}
-    password: ${RABBITMQ_PASSWORD}
-  springdoc:
+    host: ${RABBITMQ_HOST:localhost}
+    port: ${RABBITMQ_PORT:5672}
+    username: ${RABBITMQ_USERNAME:guest}
+    password: ${RABBITMQ_PASSWORD:guest}
+
+springdoc:
   swagger-ui:
     path: /swagger-ui
   api-docs:
     path: /api-docs
-  packages-to-scan: com.disa.mission_service
+  packages-to-scan: com.disa.resource_service
   paths-to-match: /api/**
   default-flat-param-object: true

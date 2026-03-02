@@ -1,7 +1,7 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { ShelterCard } from "./ShelterCard";
 import { ShelterDetail } from "./ShelterDetail";
-import { Shelter } from "../types/shelter.types";
+import type { Shelter } from "../types/shelter.types";
 
 interface ShelterListProps {
   shelters: Shelter[];
