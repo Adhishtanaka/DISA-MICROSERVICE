@@ -12,7 +12,6 @@ A microservice-based disaster management platform built with Spring Boot and Rea
 - [Roles and Use Cases](#roles-and-use-cases)
 - [Tech Stack](#tech-stack)
 - [Quick Start](#quick-start)
-- [Environment Variables](#environment-variables)
 
 ---
 
@@ -49,7 +48,7 @@ graph TD
     RMQ -->|"subscribes"| TSK
 ```
 
-All seven databases live in a single PostgreSQL instance (created by `docker/init-db.sql`). Each service owns its own schema and never queries another service's database directly.
+Each service has its own PostgreSQL database. The frontend's `docker-compose.yml` spins up a single shared PostgreSQL instance with all databases for full-stack deployment.
 
 ---
 
@@ -141,7 +140,7 @@ sequenceDiagram
 - Monitor system health via RabbitMQ management UI (`localhost:15672`)
 
 #### COORDINATOR
-- **Create an incident** — triggers automatic downstream reaction: mission stub auto-created, shelter pre-positioning notified, assessment stub created
+- **Create an incident** — triggers automatic downstream reaction: mission stub auto-created, shelter pre-positioning notified
 - **Open a mission** linked to the incident, set mission type and status
 - **Assign tasks** to RESPONDER team members
 - **Allocate resources** to missions (vehicles, medical kits, etc.)
@@ -164,7 +163,7 @@ sequenceDiagram
 ## Tech Stack
 
 **Backend**
-- Java 17 / 21 — Spring Boot 3.2.x – 4.0.x
+- Java 21 — Spring Boot 3.x – 4.0.x
 - Spring Security (JWT Bearer tokens)
 - Spring Data JPA + PostgreSQL
 - Spring AMQP (RabbitMQ topic exchange)
@@ -178,7 +177,7 @@ sequenceDiagram
 - Nginx (serves static files + reverse-proxies backend calls)
 
 **Infrastructure**
-- Docker + Docker Compose
+- Docker + Docker Compose (per-service)
 - PostgreSQL 16
 - RabbitMQ 3.13 with Management UI
 
@@ -188,16 +187,49 @@ sequenceDiagram
 
 ### Prerequisites
 - Docker >= 24 and Docker Compose V2
-- (Optional for local dev) Java 17+, Maven 3.9+, Node.js 20+, pnpm
 
-### Run everything with Docker Compose
+### Deployment Structure
+
+Each service has its own `docker-compose.yml` with its own PostgreSQL database (and RabbitMQ where needed). Services are deployed independently.
+
+```
+backend/
+  auth-service/docker-compose.yml        ← auth-service + postgres
+  incident-service/docker-compose.yml    ← incident-service + postgres + rabbitmq
+  mission-service/docker-compose.yml     ← mission-service + postgres + rabbitmq
+  resource-service/docker-compose.yml    ← resource-service + postgres + rabbitmq
+  shelter-service/docker-compose.yml     ← shelter-service + postgres + rabbitmq
+  assessment-service/docker-compose.yml  ← assessment-service + postgres + rabbitmq
+  task-service/docker-compose.yml        ← task-service + postgres + rabbitmq
+  personnel-service/docker-compose.yml   ← personnel-service + postgres + rabbitmq
+frontend/
+  docker-compose.yml                     ← all services + shared postgres + frontend
+```
+
+### Run a single service (for testing)
+
+All services have sensible defaults — no `.env` file required.
 
 ```bash
-git clone https://github.com/your-org/DISA-MICROSERVICE.git
-cd DISA-MICROSERVICE
+# Example: start shelter-service standalone
+cd backend/shelter-service
+docker compose up --build -d
 
-# .env is committed with safe local defaults — no changes needed for local dev
-docker compose up --build
+# Check it's healthy
+docker compose logs shelter-service --tail=20
+
+# Open Swagger UI
+open http://localhost:8085/swagger-ui.html
+
+# Stop when done
+docker compose down
+```
+
+### Run the full stack (browser testing)
+
+```bash
+cd frontend
+docker compose up --build -d
 ```
 
 | URL | What |
@@ -209,51 +241,22 @@ docker compose up --build
 | `http://localhost:8089/swagger-ui.html` | Resource Service Swagger |
 | `http://localhost:8085/swagger-ui.html` | Shelter Service Swagger |
 | `http://localhost:8087/swagger-ui.html` | Assessment Service Swagger |
-| `http://localhost:8088/swagger-ui.html` | Task Service Swagger |
+| `http://localhost:8088/api/v1/swagger-ui.html` | Task Service Swagger |
 | `http://localhost:8084/swagger-ui.html` | Personnel Service Swagger |
 | `http://localhost:15672` | RabbitMQ Management (guest/guest) |
 
-### Run services individually (local dev)
-
-Each service can be started independently. All default to local PostgreSQL and RabbitMQ:
+### Local development (without Docker)
 
 ```bash
-# Start infrastructure first
+# Start just the infrastructure (from any service directory)
 docker compose up postgres rabbitmq -d
 
-# Then start any service
+# Run a service locally
 cd backend/incident-service
 ./mvnw spring-boot:run
 
-# Frontend
+# Frontend dev server
 cd frontend
 pnpm install
 pnpm dev   # http://localhost:5173
 ```
-
----
-
-## Environment Variables
-
-The `.env` file in the repository root is committed with safe local defaults. **Override these for production deployments.**
-
-| Variable | Default | Used by |
-|---|---|---|
-| `POSTGRES_USER` | `postgres` | PostgreSQL, all services |
-| `POSTGRES_PASSWORD` | `postgres` | PostgreSQL, all services |
-| `RABBITMQ_DEFAULT_USER` | `guest` | RabbitMQ |
-| `RABBITMQ_DEFAULT_PASS` | `guest` | RabbitMQ |
-| `JWT_SECRET` | *(dev key)* | auth-service |
-| `GEMINI_API_KEY` | *(empty)* | assessment-service |
-
-Per-service overrides used internally by docker-compose and application.yaml:
-
-| Variable | Pattern | Example |
-|---|---|---|
-| `DB_URL` | `jdbc:postgresql://host:5432/dbname` | `jdbc:postgresql://postgres:5432/auth_db` |
-| `DB_USERNAME` | string | `postgres` |
-| `DB_PASSWORD` | string | `postgres` |
-| `RABBITMQ_HOST` | hostname | `rabbitmq` |
-| `RABBITMQ_PORT` | number | `5672` |
-| `RABBITMQ_USERNAME` | string | `guest` |
-| `RABBITMQ_PASSWORD` | string | `guest` |
