@@ -35,7 +35,7 @@ export function AppRouter() {
           path="/"
           element={
             <ProtectedRoute>
-              <Navigate to="/missions" replace />
+              <Navigate to="/incidents" replace />
             </ProtectedRoute>
           }
         />
