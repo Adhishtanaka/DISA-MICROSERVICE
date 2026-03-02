@@ -7,11 +7,13 @@ import { Modal } from '../../../components/ui/Modal';
 import { Button } from '../../../components/ui/Button';
 import { useMissions } from '../hooks/useMissions';
 import { useMissionStore } from '../store/missionStore';
+import { useRole } from '../../auth';
 
 export function MissionsPage() {
   const { missions, isLoading, error, refetch } = useMissions();
   const { missions: all } = useMissionStore();
   const [isCreateOpen, setIsCreateOpen] = useState(false);
+  const { canCreate } = useRole();
 
   // Summary stats
   const stats = {
@@ -46,10 +48,12 @@ export function MissionsPage() {
               <RefreshCw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
               Refresh
             </Button>
-            <Button size="sm" onClick={() => setIsCreateOpen(true)}>
-              <Plus className="h-4 w-4" />
-              New Mission
-            </Button>
+            {canCreate && (
+              <Button size="sm" onClick={() => setIsCreateOpen(true)}>
+                <Plus className="h-4 w-4" />
+                New Mission
+              </Button>
+            )}
           </div>
         </div>
       </header>

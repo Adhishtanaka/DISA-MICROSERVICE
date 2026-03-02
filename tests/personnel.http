@@ -1,0 +1,220 @@
+### Personnel Service Tests
+### PORT 8084
+
+@basePersonUrl      = http://localhost:8084/api/personnel/person
+@baseSkillUrl       = http://localhost:8084/api/personnel/skills
+@baseAssignmentUrl  = http://localhost:8084/api/personnel/assignments
+
+@adminToken       = <ADMIN_TOKEN>
+@coordinatorToken = <COORDINATOR_TOKEN>
+@responderToken   = <RESPONDER_TOKEN>
+@volunteerToken   = <VOLUNTEER_TOKEN>
+
+### ────────────────────── PERSONS ──────────────────────────────
+
+### ── GET all persons — VOLUNTEER (allowed ✅) ───────────────
+GET {{basePersonUrl}}
+Authorization: Bearer {{volunteerToken}}
+
+### ── GET person by ID — RESPONDER (allowed ✅) ──────────────
+GET {{basePersonUrl}}/1
+Authorization: Bearer {{responderToken}}
+
+### ── POST create person — COORDINATOR (allowed ✅) ──────────
+POST {{basePersonUrl}}
+Content-Type: application/json
+Authorization: Bearer {{coordinatorToken}}
+
+[
+  {
+    "firstName": "Kasun",
+    "lastName": "Perera",
+    "email": "kasun.perera@disa.lk",
+    "phone": "+94-77-123-4567",
+    "role": "FIELD_RESPONDER",
+    "location": "Colombo, District 4",
+    "available": true
+  }
+]
+
+### ── POST create person — ADMIN (allowed ✅) ─────────────────
+POST {{basePersonUrl}}
+Content-Type: application/json
+Authorization: Bearer {{adminToken}}
+
+[
+  {
+    "firstName": "Nimal",
+    "lastName": "Silva",
+    "email": "nimal.silva@disa.lk",
+    "phone": "+94-71-987-6543",
+    "role": "COORDINATOR",
+    "location": "Kandy",
+    "available": true
+  }
+]
+
+### ── POST create person — RESPONDER (expect 403 ❌) ──────────
+POST {{basePersonUrl}}
+Content-Type: application/json
+Authorization: Bearer {{responderToken}}
+
+[
+  {
+    "firstName": "Should",
+    "lastName": "Fail",
+    "email": "fail@test.com",
+    "role": "FIELD_RESPONDER"
+  }
+]
+
+### ── POST create person — VOLUNTEER (expect 403 ❌) ──────────
+POST {{basePersonUrl}}
+Content-Type: application/json
+Authorization: Bearer {{volunteerToken}}
+
+[
+  {
+    "firstName": "Should",
+    "lastName": "Fail",
+    "email": "fail@test.com",
+    "role": "VOLUNTEER"
+  }
+]
+
+### ── PUT update person — COORDINATOR (allowed ✅) ───────────
+PUT {{basePersonUrl}}
+Content-Type: application/json
+Authorization: Bearer {{coordinatorToken}}
+
+[
+  {
+    "id": 1,
+    "firstName": "Kasun",
+    "lastName": "Perera",
+    "email": "kasun.perera@disa.lk",
+    "phone": "+94-77-123-4567",
+    "available": false
+  }
+]
+
+### ── PUT update person — RESPONDER (expect 403 ❌) ──────────
+PUT {{basePersonUrl}}
+Content-Type: application/json
+Authorization: Bearer {{responderToken}}
+
+[
+  {
+    "id": 1,
+    "available": false
+  }
+]
+
+### ── PATCH soft-delete person — COORDINATOR (allowed ✅) ─────
+PATCH {{basePersonUrl}}/1
+Authorization: Bearer {{coordinatorToken}}
+
+### ── DELETE person — ADMIN (allowed ✅) ─────────────────────
+DELETE {{basePersonUrl}}/1
+Authorization: Bearer {{adminToken}}
+
+### ── DELETE person — COORDINATOR (expect 403 ❌) ────────────
+DELETE {{basePersonUrl}}/2
+Authorization: Bearer {{coordinatorToken}}
+
+### ────────────────────── SKILLS ────────────────────────────────
+
+### ── GET all skills — VOLUNTEER (allowed ✅) ────────────────
+GET {{baseSkillUrl}}
+Authorization: Bearer {{volunteerToken}}
+
+### ── GET skill by ID — RESPONDER (allowed ✅) ───────────────
+GET {{baseSkillUrl}}/1
+Authorization: Bearer {{responderToken}}
+
+### ── POST create skill — COORDINATOR (allowed ✅) ───────────
+POST {{baseSkillUrl}}
+Content-Type: application/json
+Authorization: Bearer {{coordinatorToken}}
+
+[
+  {
+    "name": "First Aid",
+    "description": "Basic first aid and CPR certified",
+    "level": "INTERMEDIATE"
+  }
+]
+
+### ── POST create skill — VOLUNTEER (expect 403 ❌) ──────────
+POST {{baseSkillUrl}}
+Content-Type: application/json
+Authorization: Bearer {{volunteerToken}}
+
+[
+  {
+    "name": "Should fail",
+    "level": "BASIC"
+  }
+]
+
+### ── PUT update skill — ADMIN (allowed ✅) ──────────────────
+PUT {{baseSkillUrl}}
+Content-Type: application/json
+Authorization: Bearer {{adminToken}}
+
+[
+  {
+    "id": 1,
+    "name": "Advanced First Aid",
+    "description": "Advanced first aid with trauma care",
+    "level": "ADVANCED"
+  }
+]
+
+### ── DELETE skill — ADMIN (allowed ✅) ──────────────────────
+DELETE {{baseSkillUrl}}/1
+Authorization: Bearer {{adminToken}}
+
+### ────────────────────── ASSIGNMENTS ────────────────────────────
+
+### ── GET available persons — COORDINATOR (allowed ✅) ───────
+GET {{baseAssignmentUrl}}/available-persons
+Authorization: Bearer {{coordinatorToken}}
+
+### ── GET available persons — RESPONDER (allowed ✅) ─────────
+GET {{baseAssignmentUrl}}/available-persons
+Authorization: Bearer {{responderToken}}
+
+### ── GET pending tasks — COORDINATOR (allowed ✅) ───────────
+GET {{baseAssignmentUrl}}/pending-tasks
+Authorization: Bearer {{coordinatorToken}}
+
+### ── POST match task to person — COORDINATOR (allowed ✅) ───
+POST {{baseAssignmentUrl}}/match-task
+Content-Type: application/json
+Authorization: Bearer {{coordinatorToken}}
+
+{
+  "id": 1,
+  "title": "Set up medical triage",
+  "description": "Establish a triage point at the shelter entrance",
+  "priority": "HIGH",
+  "status": "PENDING",
+  "requiredSkills": ["First Aid", "Medical"]
+}
+
+### ── POST match all pending — ADMIN (allowed ✅) ────────────
+POST {{baseAssignmentUrl}}/match-all-pending
+Authorization: Bearer {{adminToken}}
+
+### ── POST match task — VOLUNTEER (expect 403 ❌) ────────────
+POST {{baseAssignmentUrl}}/match-task
+Content-Type: application/json
+Authorization: Bearer {{volunteerToken}}
+
+{
+  "id": 2,
+  "title": "Should fail",
+  "priority": "LOW",
+  "status": "PENDING"
+}

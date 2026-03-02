@@ -1,4 +1,4 @@
-package com.example.personnel_service.security;
+package com.disa.mission_service.security;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -40,9 +40,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
             if (username != null && role != null) {
                 UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
-                        username,
-                        null,
-                        List.of(new SimpleGrantedAuthority("ROLE_" + role))
+                        username, null, List.of(new SimpleGrantedAuthority("ROLE_" + role))
                 );
                 authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                 SecurityContextHolder.getContext().setAuthentication(authToken);

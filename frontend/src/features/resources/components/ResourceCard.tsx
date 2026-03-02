@@ -2,6 +2,7 @@ import { MapPin, Package, ChevronRight, TrendingUp, TrendingDown } from 'lucide-
 import { Card, CardBody } from '../../../components/ui/Card';
 import { Button } from '../../../components/ui/Button';
 import { ResourceTypeBadge, StockStatusBadge } from './ResourceBadges';
+import { useRole } from '../../auth';
 import type { Resource } from '../types/resource.types';
 
 interface ResourceCardProps {
@@ -44,6 +45,7 @@ function formatDate(dateStr: string): string {
 
 export function ResourceCard({ resource, onViewDetails, onEditStock, onEdit, onDelete }: ResourceCardProps) {
   const isLow = resource.currentStock <= resource.threshold;
+  const { canManage, canDelete } = useRole();
 
   return (
     <Card className={`transition-shadow hover:shadow-md ${isLow ? 'ring-1 ring-red-200' : ''}`}>
@@ -94,19 +96,25 @@ export function ResourceCard({ resource, onViewDetails, onEditStock, onEdit, onD
         </p>
 
         {/* Actions */}
-        <div className="mt-4 grid grid-cols-4 gap-1.5 border-t border-gray-100 pt-3">
-          <Button variant="ghost" size="sm" onClick={() => onViewDetails(resource)} className="col-span-1">
+        <div className="mt-4 flex gap-1.5 border-t border-gray-100 pt-3">
+          <Button variant="ghost" size="sm" onClick={() => onViewDetails(resource)} className="flex-1">
             <ChevronRight className="h-4 w-4" />
           </Button>
-          <Button variant="outline" size="sm" onClick={() => onEditStock(resource)} className="col-span-1 text-xs">
-            Stock
-          </Button>
-          <Button variant="secondary" size="sm" onClick={() => onEdit(resource)} className="col-span-1 text-xs">
-            Edit
-          </Button>
-          <Button variant="danger" size="sm" onClick={() => onDelete(resource)} className="col-span-1 text-xs">
-            Del
-          </Button>
+          {canManage && (
+            <Button variant="outline" size="sm" onClick={() => onEditStock(resource)} className="flex-1 text-xs">
+              Stock
+            </Button>
+          )}
+          {canManage && (
+            <Button variant="secondary" size="sm" onClick={() => onEdit(resource)} className="flex-1 text-xs">
+              Edit
+            </Button>
+          )}
+          {canDelete && (
+            <Button variant="danger" size="sm" onClick={() => onDelete(resource)} className="flex-1 text-xs">
+              Del
+            </Button>
+          )}
         </div>
       </CardBody>
     </Card>

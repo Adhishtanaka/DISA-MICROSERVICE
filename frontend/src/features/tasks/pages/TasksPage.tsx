@@ -4,6 +4,7 @@ import { TaskCard } from '../components/TaskCard';
 import { CreateTaskForm } from '../components/CreateTaskForm';
 import { Button } from '../../../components/ui/Button';
 import { Spinner } from '../../../components/ui/Spinner';
+import { useRole } from '../../auth';
 import type { TaskStatus } from '../types/task.types';
 
 const filters: { label: string; value: TaskStatus | 'ALL' }[] = [
@@ -17,6 +18,7 @@ export function TasksPage() {
   const { tasks, loading, error, createTask, completeTask, removeTask } = useTasks();
   const [showForm, setShowForm] = useState(false);
   const [activeFilter, setActiveFilter] = useState<TaskStatus | 'ALL'>('ALL');
+  const { canCreate } = useRole();
 
   const filtered = activeFilter === 'ALL' ? tasks : tasks.filter((t) => t.status === activeFilter);
 
@@ -44,12 +46,14 @@ export function TasksPage() {
           <h1 className="text-2xl font-bold text-gray-900">Tasks</h1>
           <p className="mt-1 text-sm text-gray-500">{tasks.length} total tasks</p>
         </div>
-        <Button onClick={() => setShowForm((v) => !v)}>
-          {showForm ? 'Cancel' : 'New Task'}
-        </Button>
+        {canCreate && (
+          <Button onClick={() => setShowForm((v) => !v)}>
+            {showForm ? 'Cancel' : 'New Task'}
+          </Button>
+        )}
       </div>
 
-      {showForm && (
+      {canCreate && showForm && (
         <div className="mb-6 rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
           <h2 className="mb-4 text-lg font-semibold text-gray-900">Create Task</h2>
           <CreateTaskForm onCreate={handleCreate} onCancel={() => setShowForm(false)} />

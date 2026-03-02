@@ -3,12 +3,14 @@ import { useAssessments } from "../hooks/useAssessments";
 import { assessmentApi } from "../api/assessmentApi";
 import AssessmentCard from "../components/AssessmentCard";
 import CreateAssessmentForm from "../components/CreateAssessmentForm";
+import { useRole } from "../../auth";
 import type { CreateAssessmentRequest } from "../types/assessment.types";
 
 export default function AssessmentsPage() {
   const { assessments, loading, error, refetch } = useAssessments();
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [filter, setFilter] = useState<"all" | "draft" | "completed">("all");
+  const { canOperate, canDeleteAssessment } = useRole();
 
   const handleCreate = async (data: CreateAssessmentRequest) => {
     try {
@@ -58,15 +60,17 @@ export default function AssessmentsPage() {
           <h1 className="text-2xl font-bold">Damage Assessments</h1>
           <p className="text-gray-600">Manage field assessment reports</p>
         </div>
-        <button
-          onClick={() => setShowCreateForm(!showCreateForm)}
-          className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-        >
-          {showCreateForm ? "Cancel" : "Create Assessment"}
-        </button>
+        {canOperate && (
+          <button
+            onClick={() => setShowCreateForm(!showCreateForm)}
+            className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+          >
+            {showCreateForm ? "Cancel" : "Create Assessment"}
+          </button>
+        )}
       </div>
 
-      {showCreateForm && (
+      {canOperate && showCreateForm && (
         <div className="mb-6">
           <CreateAssessmentForm
             onSubmit={handleCreate}
@@ -125,8 +129,8 @@ export default function AssessmentsPage() {
           <AssessmentCard
             key={assessment.id}
             assessment={assessment}
-            onComplete={handleComplete}
-            onDelete={handleDelete}
+            onComplete={canOperate ? handleComplete : undefined}
+            onDelete={canDeleteAssessment ? handleDelete : undefined}
           />
         ))}
       </div>

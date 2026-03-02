@@ -1,0 +1,81 @@
+### Assessment Service Tests
+### PORT 8087
+
+@baseUrl = http://localhost:8087/api/assessments
+
+@adminToken       = <ADMIN_TOKEN>
+@coordinatorToken = <COORDINATOR_TOKEN>
+@responderToken   = <RESPONDER_TOKEN>
+@volunteerToken   = <VOLUNTEER_TOKEN>
+
+### ── GET all assessments — VOLUNTEER (allowed ✅) ───────────
+GET {{baseUrl}}
+Authorization: Bearer {{volunteerToken}}
+
+### ── POST create assessment — RESPONDER (allowed ✅) ────────
+POST {{baseUrl}}
+Content-Type: application/json
+Authorization: Bearer {{responderToken}}
+
+{
+  "incidentId": 1,
+  "assessorName": "John Responder",
+  "findings": "3 buildings structurally compromised",
+  "severity": "SEVERE",
+  "estimatedCasualties": 5,
+  "estimatedDisplaced": 120,
+  "recommendations": "Evacuate surrounding blocks",
+  "requiredActions": ["Deploy rescue team", "Set up medical post"]
+}
+
+### ── POST create assessment — VOLUNTEER (expect 403 ❌) ─────
+POST {{baseUrl}}
+Content-Type: application/json
+Authorization: Bearer {{volunteerToken}}
+
+{
+  "incidentId": 1,
+  "assessorName": "Alice Volunteer",
+  "findings": "Should be rejected",
+  "severity": "MINOR"
+}
+
+### ── GET assessment by ID — VOLUNTEER (allowed ✅) ──────────
+GET {{baseUrl}}/1
+Authorization: Bearer {{volunteerToken}}
+
+### ── GET assessments by incident ────────────────────────────
+GET {{baseUrl}}/incident/1
+Authorization: Bearer {{responderToken}}
+
+### ── PUT update assessment — RESPONDER (allowed ✅) ─────────
+PUT {{baseUrl}}/1
+Content-Type: application/json
+Authorization: Bearer {{responderToken}}
+
+{
+  "incidentId": 1,
+  "assessorName": "John Responder",
+  "findings": "Updated: 5 buildings compromised, 2 collapsed",
+  "severity": "CRITICAL",
+  "estimatedCasualties": 12,
+  "estimatedDisplaced": 300,
+  "recommendations": "Full evacuation of zone",
+  "requiredActions": ["Deploy heavy rescue", "Medical triage", "Shelter activation"]
+}
+
+### ── PUT complete assessment — RESPONDER (allowed ✅) ───────
+PUT {{baseUrl}}/1/complete
+Authorization: Bearer {{responderToken}}
+
+### ── GET completed assessments ──────────────────────────────
+GET {{baseUrl}}/completed
+Authorization: Bearer {{coordinatorToken}}
+
+### ── DELETE assessment — COORDINATOR (allowed ✅) ───────────
+DELETE {{baseUrl}}/1
+Authorization: Bearer {{coordinatorToken}}
+
+### ── DELETE assessment — RESPONDER (expect 403 ❌) ──────────
+DELETE {{baseUrl}}/1
+Authorization: Bearer {{responderToken}}

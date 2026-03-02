@@ -7,11 +7,13 @@ import { Modal } from '../../../components/ui/Modal';
 import { Button } from '../../../components/ui/Button';
 import { useResources } from '../hooks/useResources';
 import { useResourceStore } from '../store/resourceStore';
+import { useRole } from '../../auth';
 
 export function ResourcesPage() {
   const { resources: filtered, isLoading, error, refetch } = useResources();
   const { resources: all } = useResourceStore();
   const [isCreateOpen, setIsCreateOpen] = useState(false);
+  const { canCreate } = useRole();
 
   const stats = {
     total:    all.length,
@@ -39,10 +41,12 @@ export function ResourcesPage() {
               <RefreshCw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
               Refresh
             </Button>
-            <Button size="sm" onClick={() => setIsCreateOpen(true)}>
-              <Plus className="h-4 w-4" />
-              New Resource
-            </Button>
+            {canCreate && (
+              <Button size="sm" onClick={() => setIsCreateOpen(true)}>
+                <Plus className="h-4 w-4" />
+                New Resource
+              </Button>
+            )}
           </div>
         </div>
       </header>

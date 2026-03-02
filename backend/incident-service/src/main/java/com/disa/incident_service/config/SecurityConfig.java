@@ -1,6 +1,6 @@
-package com.disa.assessment_service.config;
+package com.disa.incident_service.config;
 
-import com.disa.assessment_service.security.JwtAuthenticationFilter;
+import com.disa.incident_service.security.JwtAuthenticationFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -20,20 +20,20 @@ public class SecurityConfig {
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
     @Bean
-    SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
             .csrf(AbstractHttpConfigurer::disable)
             .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/api-docs/**", "/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**").permitAll()
-                // Photo download — all authenticated
-                .requestMatchers(HttpMethod.GET, "/api/assessments/**").authenticated()
-                // Create / update / complete / upload — ADMIN, COORDINATOR, RESPONDER
-                .requestMatchers(HttpMethod.POST, "/api/assessments").hasAnyRole("ADMIN", "COORDINATOR", "RESPONDER")
-                .requestMatchers(HttpMethod.POST, "/api/assessments/*/photos").hasAnyRole("ADMIN", "COORDINATOR", "RESPONDER")
-                .requestMatchers(HttpMethod.PUT, "/api/assessments/**").hasAnyRole("ADMIN", "COORDINATOR", "RESPONDER")
-                // Delete — ADMIN, COORDINATOR
-                .requestMatchers(HttpMethod.DELETE, "/api/assessments/**").hasAnyRole("ADMIN", "COORDINATOR")
+                .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html").permitAll()
+                // Read access — all authenticated roles
+                .requestMatchers(HttpMethod.GET, "/api/incidents/**").authenticated()
+                // Create — ADMIN, COORDINATOR, RESPONDER
+                .requestMatchers(HttpMethod.POST, "/api/incidents").hasAnyRole("ADMIN", "COORDINATOR", "RESPONDER")
+                // Update / escalate / status — ADMIN, COORDINATOR
+                .requestMatchers(HttpMethod.PUT, "/api/incidents/**").hasAnyRole("ADMIN", "COORDINATOR")
+                // Delete — ADMIN only
+                .requestMatchers(HttpMethod.DELETE, "/api/incidents/**").hasRole("ADMIN")
                 .anyRequest().authenticated()
             )
             .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
