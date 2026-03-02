@@ -257,6 +257,351 @@ cd backend/incident-service
 
 # Frontend dev server
 cd frontend
-pnpm install
-pnpm dev   # http://localhost:5173
+npm install
+npm run dev   # http://localhost:5173
+```
+
+---
+
+## Azure Deployment (per-service)
+
+This guide deploys each microservice as a separate **Azure Container Instance (ACI)** backed by **Azure Database for PostgreSQL** and a shared **RabbitMQ** ACI. Each team member can own and deploy their service independently.
+
+### Prerequisites
+
+```bash
+# Install Azure CLI
+brew install azure-cli        # macOS
+az login
+az upgrade
+
+# Set your variables (adjust as needed)
+RESOURCE_GROUP=disa-rg
+LOCATION=eastus
+ACR_NAME=disaregistry           # must be globally unique, lowercase, no hyphens
+PG_SERVER=disa-postgres         # Azure PostgreSQL flexible server name
+VNET_NAME=disa-vnet
+```
+
+### 1. One-time shared infrastructure
+
+```bash
+# Create resource group
+az group create --name $RESOURCE_GROUP --location $LOCATION
+
+# Create Azure Container Registry
+az acr create --resource-group $RESOURCE_GROUP \
+  --name $ACR_NAME --sku Basic --admin-enabled true
+
+# Get ACR credentials
+ACR_LOGIN_SERVER=$(az acr show --name $ACR_NAME --query loginServer -o tsv)
+ACR_PASSWORD=$(az acr credential show --name $ACR_NAME --query passwords[0].value -o tsv)
+
+# Login to ACR
+docker login $ACR_LOGIN_SERVER -u $ACR_NAME -p $ACR_PASSWORD
+```
+
+### 2. Azure Database for PostgreSQL (shared server, separate databases)
+
+```bash
+# Create flexible server (one server, multiple databases)
+az postgres flexible-server create \
+  --resource-group $RESOURCE_GROUP \
+  --name $PG_SERVER \
+  --location $LOCATION \
+  --admin-user pgadmin \
+  --admin-password "Change_Me_123!" \
+  --sku-name Standard_B1ms \
+  --tier Burstable \
+  --public-access 0.0.0.0
+
+# Create one database per service
+for DB in auth_db incident_db mission_db resource_db shelter_db assessment_db task_db personnel_db; do
+  az postgres flexible-server db create \
+    --resource-group $RESOURCE_GROUP \
+    --server-name $PG_SERVER \
+    --database-name $DB
+done
+
+# Note the connection string format:
+# jdbc:postgresql://<PG_SERVER>.postgres.database.azure.com:5432/<DB>?sslmode=require
+PG_HOST="${PG_SERVER}.postgres.database.azure.com"
+```
+
+### 3. RabbitMQ on Azure Container Instances
+
+```bash
+az container create \
+  --resource-group $RESOURCE_GROUP \
+  --name rabbitmq \
+  --image rabbitmq:3.13-management \
+  --ports 5672 15672 \
+  --dns-name-label disa-rabbitmq \
+  --environment-variables \
+      RABBITMQ_DEFAULT_USER=guest \
+      RABBITMQ_DEFAULT_PASS=guest \
+  --cpu 1 --memory 1
+
+RABBITMQ_HOST=$(az container show \
+  --resource-group $RESOURCE_GROUP --name rabbitmq \
+  --query ipAddress.fqdn -o tsv)
+
+echo "RabbitMQ: $RABBITMQ_HOST"
+# Management UI: http://$RABBITMQ_HOST:15672 (guest/guest)
+```
+
+### 4. Deploy each backend service
+
+Replace `<PG_HOST>`, `<PG_PASSWORD>`, and `<RABBITMQ_HOST>` with your actual values.
+
+#### auth-service
+
+```bash
+cd backend/auth-service
+docker build -t $ACR_LOGIN_SERVER/auth-service:latest .
+docker push $ACR_LOGIN_SERVER/auth-service:latest
+
+az container create \
+  --resource-group $RESOURCE_GROUP \
+  --name auth-service \
+  --image $ACR_LOGIN_SERVER/auth-service:latest \
+  --registry-login-server $ACR_LOGIN_SERVER \
+  --registry-username $ACR_NAME \
+  --registry-password $ACR_PASSWORD \
+  --ports 8081 \
+  --dns-name-label disa-auth \
+  --environment-variables \
+      DB_URL="jdbc:postgresql://<PG_HOST>:5432/auth_db?sslmode=require" \
+      DB_USERNAME=pgadmin \
+      DB_PASSWORD="Change_Me_123!" \
+  --cpu 1 --memory 1
+
+AUTH_URL=$(az container show --resource-group $RESOURCE_GROUP --name auth-service --query ipAddress.fqdn -o tsv)
+echo "Auth service: http://$AUTH_URL:8081"
+```
+
+#### incident-service
+
+```bash
+cd backend/incident-service
+docker build -t $ACR_LOGIN_SERVER/incident-service:latest .
+docker push $ACR_LOGIN_SERVER/incident-service:latest
+
+az container create \
+  --resource-group $RESOURCE_GROUP \
+  --name incident-service \
+  --image $ACR_LOGIN_SERVER/incident-service:latest \
+  --registry-login-server $ACR_LOGIN_SERVER \
+  --registry-username $ACR_NAME \
+  --registry-password $ACR_PASSWORD \
+  --ports 8083 \
+  --dns-name-label disa-incident \
+  --environment-variables \
+      DB_URL="jdbc:postgresql://<PG_HOST>:5432/incident_db?sslmode=require" \
+      DB_USERNAME=pgadmin \
+      DB_PASSWORD="Change_Me_123!" \
+      RABBITMQ_HOST="<RABBITMQ_HOST>" \
+  --cpu 1 --memory 1
+```
+
+#### mission-service
+
+```bash
+cd backend/mission-service
+docker build -t $ACR_LOGIN_SERVER/mission-service:latest .
+docker push $ACR_LOGIN_SERVER/mission-service:latest
+
+az container create \
+  --resource-group $RESOURCE_GROUP \
+  --name mission-service \
+  --image $ACR_LOGIN_SERVER/mission-service:latest \
+  --registry-login-server $ACR_LOGIN_SERVER \
+  --registry-username $ACR_NAME \
+  --registry-password $ACR_PASSWORD \
+  --ports 8086 \
+  --dns-name-label disa-mission \
+  --environment-variables \
+      DB_URL="jdbc:postgresql://<PG_HOST>:5432/mission_db?sslmode=require" \
+      DB_USERNAME=pgadmin \
+      DB_PASSWORD="Change_Me_123!" \
+      RABBITMQ_HOST="<RABBITMQ_HOST>" \
+  --cpu 1 --memory 1
+```
+
+#### resource-service
+
+```bash
+cd backend/resource-service
+docker build -t $ACR_LOGIN_SERVER/resource-service:latest .
+docker push $ACR_LOGIN_SERVER/resource-service:latest
+
+az container create \
+  --resource-group $RESOURCE_GROUP \
+  --name resource-service \
+  --image $ACR_LOGIN_SERVER/resource-service:latest \
+  --registry-login-server $ACR_LOGIN_SERVER \
+  --registry-username $ACR_NAME \
+  --registry-password $ACR_PASSWORD \
+  --ports 8089 \
+  --dns-name-label disa-resource \
+  --environment-variables \
+      DB_URL="jdbc:postgresql://<PG_HOST>:5432/resource_db?sslmode=require" \
+      DB_USERNAME=pgadmin \
+      DB_PASSWORD="Change_Me_123!" \
+      RABBITMQ_HOST="<RABBITMQ_HOST>" \
+  --cpu 1 --memory 1
+```
+
+#### shelter-service
+
+```bash
+cd backend/shelter-service
+docker build -t $ACR_LOGIN_SERVER/shelter-service:latest .
+docker push $ACR_LOGIN_SERVER/shelter-service:latest
+
+az container create \
+  --resource-group $RESOURCE_GROUP \
+  --name shelter-service \
+  --image $ACR_LOGIN_SERVER/shelter-service:latest \
+  --registry-login-server $ACR_LOGIN_SERVER \
+  --registry-username $ACR_NAME \
+  --registry-password $ACR_PASSWORD \
+  --ports 8085 \
+  --dns-name-label disa-shelter \
+  --environment-variables \
+      DB_URL="jdbc:postgresql://<PG_HOST>:5432/shelter_db?sslmode=require" \
+      DB_USERNAME=pgadmin \
+      DB_PASSWORD="Change_Me_123!" \
+      RABBITMQ_HOST="<RABBITMQ_HOST>" \
+  --cpu 1 --memory 1
+```
+
+#### assessment-service
+
+```bash
+cd backend/assessment-service
+docker build -t $ACR_LOGIN_SERVER/assessment-service:latest .
+docker push $ACR_LOGIN_SERVER/assessment-service:latest
+
+az container create \
+  --resource-group $RESOURCE_GROUP \
+  --name assessment-service \
+  --image $ACR_LOGIN_SERVER/assessment-service:latest \
+  --registry-login-server $ACR_LOGIN_SERVER \
+  --registry-username $ACR_NAME \
+  --registry-password $ACR_PASSWORD \
+  --ports 8087 \
+  --dns-name-label disa-assessment \
+  --environment-variables \
+      DB_URL="jdbc:postgresql://<PG_HOST>:5432/assessment_db?sslmode=require" \
+      DB_USERNAME=pgadmin \
+      DB_PASSWORD="Change_Me_123!" \
+      RABBITMQ_HOST="<RABBITMQ_HOST>" \
+  --cpu 1 --memory 1
+```
+
+#### task-service
+
+```bash
+cd backend/task-service
+docker build -t $ACR_LOGIN_SERVER/task-service:latest .
+docker push $ACR_LOGIN_SERVER/task-service:latest
+
+az container create \
+  --resource-group $RESOURCE_GROUP \
+  --name task-service \
+  --image $ACR_LOGIN_SERVER/task-service:latest \
+  --registry-login-server $ACR_LOGIN_SERVER \
+  --registry-username $ACR_NAME \
+  --registry-password $ACR_PASSWORD \
+  --ports 8088 \
+  --dns-name-label disa-task \
+  --environment-variables \
+      DB_URL="jdbc:postgresql://<PG_HOST>:5432/task_db?sslmode=require" \
+      DB_USERNAME=pgadmin \
+      DB_PASSWORD="Change_Me_123!" \
+      RABBITMQ_HOST="<RABBITMQ_HOST>" \
+  --cpu 1 --memory 1
+```
+
+#### personnel-service
+
+```bash
+cd backend/personnel-service
+docker build -t $ACR_LOGIN_SERVER/personnel-service:latest .
+docker push $ACR_LOGIN_SERVER/personnel-service:latest
+
+az container create \
+  --resource-group $RESOURCE_GROUP \
+  --name personnel-service \
+  --image $ACR_LOGIN_SERVER/personnel-service:latest \
+  --registry-login-server $ACR_LOGIN_SERVER \
+  --registry-username $ACR_NAME \
+  --registry-password $ACR_PASSWORD \
+  --ports 8084 \
+  --dns-name-label disa-personnel \
+  --environment-variables \
+      DB_URL="jdbc:postgresql://<PG_HOST>:5432/personnel_db?sslmode=require" \
+      DB_USERNAME=pgadmin \
+      DB_PASSWORD="Change_Me_123!" \
+      RABBITMQ_HOST="<RABBITMQ_HOST>" \
+  --cpu 1 --memory 1
+```
+
+### 5. Deploy the frontend
+
+After deploying all backend services, note each service's FQDN, then deploy the frontend:
+
+```bash
+cd frontend
+docker build -t $ACR_LOGIN_SERVER/frontend:latest .
+docker push $ACR_LOGIN_SERVER/frontend:latest
+
+# Replace <*_URL> with the actual FQDNs from above
+az container create \
+  --resource-group $RESOURCE_GROUP \
+  --name frontend \
+  --image $ACR_LOGIN_SERVER/frontend:latest \
+  --registry-login-server $ACR_LOGIN_SERVER \
+  --registry-username $ACR_NAME \
+  --registry-password $ACR_PASSWORD \
+  --ports 80 \
+  --dns-name-label disa-frontend \
+  --environment-variables \
+      AUTH_SERVICE_URL="http://<AUTH_FQDN>:8081" \
+      INCIDENT_SERVICE_URL="http://<INCIDENT_FQDN>:8083" \
+      MISSION_SERVICE_URL="http://<MISSION_FQDN>:8086" \
+      RESOURCE_SERVICE_URL="http://<RESOURCE_FQDN>:8089" \
+      SHELTER_SERVICE_URL="http://<SHELTER_FQDN>:8085" \
+      ASSESSMENT_SERVICE_URL="http://<ASSESSMENT_FQDN>:8087" \
+      TASK_SERVICE_URL="http://<TASK_FQDN>:8088" \
+  --cpu 1 --memory 1
+
+FRONTEND_URL=$(az container show --resource-group $RESOURCE_GROUP --name frontend --query ipAddress.fqdn -o tsv)
+echo "App: http://$FRONTEND_URL"
+```
+
+### Service environment variables reference
+
+| Service | `DB_URL` database | RabbitMQ needed |
+|---|---|---|
+| auth-service | `auth_db` | No |
+| incident-service | `incident_db` | Yes (publisher) |
+| mission-service | `mission_db` | Yes (subscriber) |
+| resource-service | `resource_db` | Yes (publisher) |
+| shelter-service | `shelter_db` | Yes (subscriber) |
+| assessment-service | `assessment_db` | Yes (publisher) |
+| task-service | `task_db` | Yes (subscriber) |
+| personnel-service | `personnel_db` | Yes (subscriber) |
+
+All services accept these environment variables (with defaults shown):
+
+```
+DB_URL=jdbc:postgresql://localhost:5432/<db_name>
+DB_USERNAME=postgres
+DB_PASSWORD=postgres
+RABBITMQ_HOST=localhost
+RABBITMQ_PORT=5672
+RABBITMQ_USERNAME=guest
+RABBITMQ_PASSWORD=guest
 ```

@@ -28,16 +28,22 @@ Access the app at `http://YOUR_SERVER`
 
 ### 2. Deploy frontend only (backends on separate servers)
 
-The Nginx config routes requests to backend service names (`auth-service`, `incident-service`, etc.). For a multi-server setup, update [nginx.conf](../../frontend/nginx.conf) to use your servers' actual IPs or hostnames.
-
-Example: replace `proxy_pass http://auth-service:8081/api/auth/;` with `proxy_pass http://192.168.1.11:8081/api/auth/;`
-
-Then build and deploy:
+The Nginx config uses environment variable substitution at container start. Set each service URL to your team member's server IP:
 
 ```bash
 cd DISA-MICROSERVICE/frontend
+
+AUTH_SERVICE_URL=http://192.168.1.11:8081 \
+INCIDENT_SERVICE_URL=http://192.168.1.12:8083 \
+MISSION_SERVICE_URL=http://192.168.1.13:8086 \
+RESOURCE_SERVICE_URL=http://192.168.1.14:8089 \
+SHELTER_SERVICE_URL=http://192.168.1.15:8085 \
+ASSESSMENT_SERVICE_URL=http://192.168.1.16:8087 \
+TASK_SERVICE_URL=http://192.168.1.17:8088 \
 docker compose up --build -d frontend
 ```
+
+Or set them in `frontend/docker-compose.yml` under the `frontend` service's `environment:` block.
 
 ---
 
