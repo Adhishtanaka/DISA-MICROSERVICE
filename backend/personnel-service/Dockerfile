@@ -7,14 +7,11 @@ COPY mvnw.cmd .
 COPY .mvn .mvn
 COPY pom.xml .
 
-# Download dependencies
-RUN ./mvnw dependency:go-offline -B
-
 # Copy source code
 COPY src src
 
 # Build the application
-RUN ./mvnw clean package -DskipTests
+RUN --mount=type=cache,target=/root/.m2 ./mvnw clean package -DskipTests
 
 FROM eclipse-temurin:21-jre-alpine
 WORKDIR /app

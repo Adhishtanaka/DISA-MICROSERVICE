@@ -5,11 +5,10 @@ WORKDIR /app
 
 # Copy dependency descriptor first to leverage layer caching
 COPY pom.xml .
-RUN mvn dependency:go-offline -B
 
 # Copy source and build the fat JAR (skip tests for image build)
 COPY src ./src
-RUN mvn clean package -DskipTests -B
+RUN --mount=type=cache,target=/root/.m2 mvn clean package -DskipTests -B
 
 # ─── Stage 2: Runtime ──────────────────────────────────────────────────────────
 FROM eclipse-temurin:21-jre-alpine

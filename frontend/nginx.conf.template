@@ -1,0 +1,76 @@
+server {
+    listen 80;
+    server_name _;
+    root /usr/share/nginx/html;
+    index index.html;
+
+    # ── Backend proxy rules ──────────────────────────────────────────────────
+    # Service URLs are injected at container start via environment variables.
+    # Defaults (same Docker network) work out of the box.
+    # Override per-service for team deployment: AUTH_SERVICE_URL=http://1.2.3.4:8081
+
+    location /api/auth/ {
+        proxy_pass ${AUTH_SERVICE_URL}/api/auth/;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    }
+
+    location /api/incidents {
+        proxy_pass ${INCIDENT_SERVICE_URL}/api/incidents;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    }
+
+    location /missions {
+        proxy_pass ${MISSION_SERVICE_URL}/missions;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    }
+
+    location /api/resources {
+        proxy_pass ${RESOURCE_SERVICE_URL}/api/resources;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    }
+
+    location /api/shelters {
+        proxy_pass ${SHELTER_SERVICE_URL}/api/shelters;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    }
+
+    location /api/assessments {
+        proxy_pass ${ASSESSMENT_SERVICE_URL}/api/assessments;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    }
+
+    location /api/v1/ {
+        proxy_pass ${TASK_SERVICE_URL}/api/v1/;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    }
+
+    # ── Frontend (React Router) ──────────────────────────────────────────────
+
+    location / {
+        try_files $uri $uri/ /index.html;
+    }
+
+    # Cache static assets
+    location ~* \.(js|css|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot)$ {
+        expires 1y;
+        add_header Cache-Control "public, immutable";
+    }
+
+    # Gzip compression
+    gzip on;
+    gzip_types text/plain text/css application/json application/javascript text/xml application/xml application/xml+rss text/javascript;
+}
