@@ -1,0 +1,13 @@
+INSERT INTO task (id, task_code, type, title, description, priority, incident_id, assigned_to, location, status, created_at, completed_at) VALUES
+(1, 'TSK-1709100001', 'RESCUE_OPERATION', 'Flood Victim Evacuation - Zone A', 'Evacuate trapped residents from flooded residential area in Zone A. Multiple families reported stranded on rooftops.', 'URGENT', 1, NULL, 'Colombo Zone A - Kelani River Bank', 'PENDING', NOW(), NULL),
+(2, 'TSK-1709100002', 'MEDICAL_AID', 'Set Up Field Hospital - Galle', 'Establish temporary medical facility near disaster zone. Need triage area, treatment tents, and supply storage.', 'HIGH', 1, 3, 'Galle Fort Area', 'IN_PROGRESS', NOW(), NULL),
+(3, 'TSK-1709100003', 'DEBRIS_REMOVAL', 'Clear Collapsed Building - Main Road', 'Remove debris from collapsed two-story commercial building blocking main access road. Heavy machinery required.', 'HIGH', 2, NULL, 'Matara Main Road Junction', 'PENDING', NOW(), NULL),
+(4, 'TSK-1709100004', 'RESCUE_OPERATION', 'Landslide Rescue - Hill Country', 'Search for survivors in landslide-affected tea plantation area. Unstable terrain - proceed with caution.', 'URGENT', 3, 5, 'Ratnapura Hill Plantation Sector 7', 'IN_PROGRESS', NOW(), NULL),
+(5, 'TSK-1709100005', 'MEDICAL_AID', 'Emergency Medical Supply Distribution', 'Distribute emergency medical kits to 3 relief camps. Includes antibiotics, bandages, water purification tablets.', 'MEDIUM', 1, NULL, 'Kandy District Relief Camps', 'PENDING', NOW(), NULL),
+(6, 'TSK-1709100006', 'RESCUE_OPERATION', 'Bridge Collapse - River Crossing Rescue', 'Rescue workers and commuters stranded due to bridge collapse. Swift water rescue team needed.', 'URGENT', 4, NULL, 'Kurunegala Bridge - Deduru Oya', 'PENDING', NOW(), NULL),
+(7, 'TSK-1709100007', 'DEBRIS_REMOVAL', 'Highway Debris Clearance - A2', 'Clear fallen trees and power lines from A2 highway. Restore access for emergency vehicles.', 'HIGH', 2, 7, 'A2 Highway KM 45-48', 'IN_PROGRESS', NOW(), NULL),
+(8, 'TSK-1709100008', 'MEDICAL_AID', 'Water Contamination Response', 'Test and treat contaminated water sources in affected area. Set up clean water distribution points.', 'MEDIUM', 5, NULL, 'Anuradhapura North Wells', 'PENDING', NOW(), NULL),
+(9, 'TSK-1709100009', 'RESCUE_OPERATION', 'Coastal Search After Storm', 'Search coastal areas for missing fishermen after cyclone. Coordinate with coast guard.', 'HIGH', 6, NULL, 'Trincomalee Coast - 5km stretch', 'PENDING', NOW(), NULL),
+(10, 'TSK-1709100010', 'DEBRIS_REMOVAL', 'School Building Structural Assessment', 'Assess and clear damaged school building for safe re-entry. Check structural integrity before allowing access.', 'LOW', 3, NULL, 'Jaffna Central School Complex', 'PENDING', NOW(), NULL);
+
+SELECT setval('task_id_seq', 10);
