@@ -7,8 +7,11 @@ import com.disa.auth_service.dto.UpdateUserRequest;
 import com.disa.auth_service.dto.UserProfileResponse;
 import com.disa.auth_service.entity.Role;
 import com.disa.auth_service.entity.User;
+import com.disa.auth_service.event.EventPublisher;
+import com.disa.auth_service.event.UserRegisteredEvent;
 import com.disa.auth_service.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -17,10 +20,12 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 
 @Service
+@Slf4j
 @RequiredArgsConstructor
 public class AuthServiceImpl implements AuthService {
 
@@ -29,6 +34,7 @@ public class AuthServiceImpl implements AuthService {
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
     private final UserDetailsService userDetailsService;
+    private final EventPublisher eventPublisher;
 
     /**
      * Registers a new user with the provided registration details.
@@ -56,6 +62,26 @@ public class AuthServiceImpl implements AuthService {
         user.setPhoneNumber(request.getPhoneNumber());
 
         userRepository.save(user);
+
+        // Publish user.registered event to RabbitMQ
+        try {
+            UserRegisteredEvent.UserPayload payload = new UserRegisteredEvent.UserPayload(
+                    user.getId(),
+                    user.getUsername(),
+                    user.getEmail(),
+                    user.getFullName(),
+                    user.getPhoneNumber(),
+                    user.getRole().name()
+            );
+            UserRegisteredEvent event = new UserRegisteredEvent(
+                    "user.registered",
+                    LocalDateTime.now(),
+                    payload
+            );
+            eventPublisher.publishUserRegistered(event);
+        } catch (Exception e) {
+            log.error("Failed to publish user.registered event for user: {}", user.getUsername(), e);
+        }
 
         Map<String, Object> claims = new HashMap<>();
         claims.put("role", user.getRole().name());
