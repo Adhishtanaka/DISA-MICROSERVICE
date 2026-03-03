@@ -2,80 +2,60 @@ package com.example.personnel_service.service;
 
 import com.example.personnel_service.entity.Document;
 import com.example.personnel_service.repository.DocumentRepository;
+import jakarta.annotation.PostConstruct;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.UrlResource;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.UUID;
 
-/**
- * Service class for managing Document entities.
- * Provides business logic for Document CRUD operations including soft delete functionality.
- * 
- * @author DISA Team
- * @version 1.0
- * @since 2026-02-21
- */
 @Service
 public class DocumentService {
     private final DocumentRepository repository;
+    private final Path uploadDir;
 
-    /**
-     * Constructs a new DocumentService with the specified repository.
-     * 
-     * @param repository the DocumentRepository used for data access
-     */
-    public DocumentService(DocumentRepository repository) {
+    public DocumentService(DocumentRepository repository,
+                           @Value("${file.upload-dir:./uploads}") String uploadPath) {
         this.repository = repository;
+        this.uploadDir = Paths.get(uploadPath).toAbsolutePath().normalize();
     }
 
-    /**
-     * Retrieves all documents from the database.
-     * 
-     * @return list of all Document entities
-     */
+    @PostConstruct
+    public void init() {
+        try {
+            Files.createDirectories(uploadDir);
+        } catch (IOException e) {
+            throw new RuntimeException("Could not create upload directory", e);
+        }
+    }
+
     public List<Document> getAllDocuments() {
         return repository.findAll();
     }
 
-    /**
-     * Retrieves a document by its unique identifier.
-     * 
-     * @param id the unique identifier of the document
-     * @return the Document entity with the specified ID
-     * @throws RuntimeException if document with the given ID is not found
-     */
     public Document getDocumentById(Long id) {
         return repository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Document not found"));
     }
 
-    /**
-     * Adds one or more new document records to the database.
-     * 
-     * @param documents list of Document entities to be saved
-     * @return list of saved Document entities with generated IDs
-     */
     public List<Document> addDocument(List<Document> documents) {
         return repository.saveAll(documents);
     }
 
-    /**
-     * Updates one or more existing document records in the database.
-     * 
-     * @param documents list of Document entities with updated information
-     * @return list of updated Document entities
-     */
     public List<Document> updateDocument(List<Document> documents) {
         return repository.saveAll(documents);
     }
 
-    /**
-     * Performs a soft delete by marking a document as disabled.
-     * The record remains in the database but is flagged as inactive.
-     * 
-     * @param id the unique identifier of the document to soft delete
-     * @return the updated Document entity with isDisabled set to true
-     * @throws RuntimeException if document with the given ID is not found
-     */
     public Document softDeleteDocument(Long id) {
         Document document = repository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Document not found"));
@@ -83,15 +63,58 @@ public class DocumentService {
         return repository.save(document);
     }
 
-    /**
-     * Permanently deletes a document record from the database.
-     * 
-     * @param id the unique identifier of the document to delete
-     * @throws RuntimeException if document with the given ID is not found
-     */
     public void deleteDocument(Long id) {
         Document document = repository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Document not found"));
+        // Delete physical file if it exists
+        if (document.getUrl() != null && document.getUrl().startsWith("/api/personnel/documents/")) {
+            try {
+                String filename = document.getUrl().substring(document.getUrl().lastIndexOf('/') + 1);
+                Path filePath = uploadDir.resolve(filename);
+                Files.deleteIfExists(filePath);
+            } catch (IOException ignored) {
+            }
+        }
         repository.delete(document);
+    }
+
+    /**
+     * Stores an uploaded file and creates a Document record.
+     */
+    public Document uploadFile(MultipartFile file, String note, String issuedBy) throws IOException {
+        String originalName = file.getOriginalFilename();
+        String extension = "";
+        if (originalName != null && originalName.contains(".")) {
+            extension = originalName.substring(originalName.lastIndexOf('.'));
+        }
+        String storedName = UUID.randomUUID() + extension;
+
+        Path targetPath = uploadDir.resolve(storedName);
+        Files.copy(file.getInputStream(), targetPath, StandardCopyOption.REPLACE_EXISTING);
+
+        Document doc = new Document();
+        doc.setName(originalName);
+        doc.setUrl("/api/personnel/documents/files/" + storedName);
+        doc.setNote(note != null ? note : "");
+        doc.setIssuedBy(issuedBy != null ? issuedBy : "");
+        doc.setIssueDate(LocalDateTime.now());
+
+        return repository.save(doc);
+    }
+
+    /**
+     * Loads a stored file as a Resource for download.
+     */
+    public Resource loadFile(String filename) {
+        try {
+            Path filePath = uploadDir.resolve(filename).normalize();
+            Resource resource = new UrlResource(filePath.toUri());
+            if (resource.exists() && resource.isReadable()) {
+                return resource;
+            }
+            throw new RuntimeException("File not found: " + filename);
+        } catch (MalformedURLException e) {
+            throw new RuntimeException("File not found: " + filename, e);
+        }
     }
 }

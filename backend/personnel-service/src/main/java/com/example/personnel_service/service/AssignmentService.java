@@ -1,18 +1,26 @@
 package com.example.personnel_service.service;
 
 import com.example.personnel_service.client.TaskClient;
+import com.example.personnel_service.dto.AssignmentHistoryDto;
 import com.example.personnel_service.dto.PersonDto;
 import com.example.personnel_service.dto.TaskAssignmentDto;
 import com.example.personnel_service.dto.TaskDto;
+import com.example.personnel_service.entity.AssignmentHistory;
 import com.example.personnel_service.entity.Person;
+import com.example.personnel_service.repository.AssignmentHistoryRepository;
+import com.example.personnel_service.repository.PersonRepository;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
+import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -54,8 +62,12 @@ import java.util.stream.Collectors;
 @Service
 public class AssignmentService {
 
+    private static final Logger log = LoggerFactory.getLogger(AssignmentService.class);
+
     private final PersonService personService;
     private final TaskClient taskClient;
+    private final AssignmentHistoryRepository assignmentHistoryRepository;
+    private final PersonRepository personRepository;
     private final RestTemplate restTemplate;
     private final ObjectMapper objectMapper;
 
@@ -65,16 +77,17 @@ public class AssignmentService {
     @Value("${model.gemini.api.key}")
     private String geminiApiKey;
 
-    /**
-     * Constructs a new AssignmentService with required dependencies.
-     *
-     * @param personService the service for managing personnel data
-     * @param taskClient the client for fetching task information
-     */
-    public AssignmentService(PersonService personService, TaskClient taskClient) {
+    public AssignmentService(PersonService personService, TaskClient taskClient,
+                             AssignmentHistoryRepository assignmentHistoryRepository,
+                             PersonRepository personRepository) {
         this.personService = personService;
         this.taskClient = taskClient;
-        this.restTemplate = new RestTemplate();
+        this.assignmentHistoryRepository = assignmentHistoryRepository;
+        this.personRepository = personRepository;
+        SimpleClientHttpRequestFactory factory = new SimpleClientHttpRequestFactory();
+        factory.setConnectTimeout(java.time.Duration.ofSeconds(10));
+        factory.setReadTimeout(java.time.Duration.ofSeconds(60));
+        this.restTemplate = new RestTemplate(factory);
         this.objectMapper = new ObjectMapper();
     }
 
@@ -135,7 +148,17 @@ public class AssignmentService {
      * @see TaskAssignmentDto
      */
     public TaskAssignmentDto matchTaskToPerson(TaskDto task) {
+        return matchTaskToPerson(task, null);
+    }
+
+    public TaskAssignmentDto matchTaskToPerson(TaskDto task, Set<Long> excludePersonIds) {
         List<PersonDto> availablePersons = getAvailablePersons();
+
+        if (excludePersonIds != null && !excludePersonIds.isEmpty()) {
+            availablePersons = availablePersons.stream()
+                    .filter(p -> !excludePersonIds.contains(p.getId()))
+                    .collect(Collectors.toList());
+        }
 
         if (availablePersons.isEmpty()) {
             throw new RuntimeException("No available persons found for task assignment");
@@ -143,8 +166,96 @@ public class AssignmentService {
 
         String prompt = buildPrompt(availablePersons, task);
         String geminiResponse = callGeminiApi(prompt);
+        TaskAssignmentDto assignment = parseGeminiResponse(geminiResponse, availablePersons, task);
 
-        return parseGeminiResponse(geminiResponse, availablePersons, task);
+        // Persist the assignment
+        persistAssignment(assignment);
+
+        return assignment;
+    }
+
+    private void persistAssignment(TaskAssignmentDto assignment) {
+        PersonDto assignedPerson = assignment.getAssignedPerson();
+        TaskDto task = assignment.getTask();
+
+        // 1. Notify task-service to assign the task
+        boolean taskAssigned = taskClient.assignTask(task.getId(), assignedPerson.getId());
+        if (!taskAssigned) {
+            log.warn("Task-service assignment failed for task {} but continuing with local persistence", task.getId());
+        }
+
+        // 2. Save assignment history
+        Person person = personRepository.findById(assignedPerson.getId())
+                .orElseThrow(() -> new RuntimeException("Person not found: " + assignedPerson.getId()));
+
+        AssignmentHistory history = new AssignmentHistory();
+        history.setPerson(person);
+        history.setTaskId(task.getId());
+        history.setTaskCode(task.getTaskCode());
+        history.setTaskTitle(task.getTitle());
+        history.setTaskType(task.getType() != null ? task.getType().name() : "UNKNOWN");
+        history.setAssignmentReason(assignment.getAssignmentReason());
+        history.setMatchScore(assignment.getMatchScore());
+        history.setStatus("ACTIVE");
+        assignmentHistoryRepository.save(history);
+
+        // 3. Update person status to On Duty
+        person.setStatus("On Duty");
+        personRepository.save(person);
+
+        log.info("Persisted assignment: {} -> task {} ({})", person.getFirstName() + " " + person.getLastName(),
+                task.getTaskCode(), task.getTitle());
+    }
+
+    public List<AssignmentHistoryDto> getAssignmentHistory(Long personId) {
+        return assignmentHistoryRepository.findByPersonIdOrderByAssignedAtDesc(personId).stream()
+                .map(this::convertToAssignmentHistoryDto)
+                .collect(Collectors.toList());
+    }
+
+    public List<AssignmentHistoryDto> getActiveAssignments(Long personId) {
+        return assignmentHistoryRepository.findByPersonIdAndStatus(personId, "ACTIVE").stream()
+                .map(this::convertToAssignmentHistoryDto)
+                .collect(Collectors.toList());
+    }
+
+    public AssignmentHistoryDto completeAssignment(Long assignmentId) {
+        AssignmentHistory assignment = assignmentHistoryRepository.findById(assignmentId)
+                .orElseThrow(() -> new RuntimeException("Assignment not found: " + assignmentId));
+
+        assignment.setStatus("COMPLETED");
+        assignment.setCompletedAt(LocalDateTime.now());
+        assignmentHistoryRepository.save(assignment);
+
+        // Check if person has any other active assignments
+        Person person = assignment.getPerson();
+        List<AssignmentHistory> activeAssignments = assignmentHistoryRepository
+                .findByPersonIdAndStatus(person.getId(), "ACTIVE");
+
+        if (activeAssignments.isEmpty()) {
+            person.setStatus("Available");
+            personRepository.save(person);
+            log.info("Person {} status set back to Available (no active assignments)", person.getFirstName());
+        }
+
+        return convertToAssignmentHistoryDto(assignment);
+    }
+
+    private AssignmentHistoryDto convertToAssignmentHistoryDto(AssignmentHistory history) {
+        AssignmentHistoryDto dto = new AssignmentHistoryDto();
+        dto.setId(history.getId());
+        dto.setPersonId(history.getPerson().getId());
+        dto.setPersonName(history.getPerson().getFirstName() + " " + history.getPerson().getLastName());
+        dto.setTaskId(history.getTaskId());
+        dto.setTaskCode(history.getTaskCode());
+        dto.setTaskTitle(history.getTaskTitle());
+        dto.setTaskType(history.getTaskType());
+        dto.setAssignmentReason(history.getAssignmentReason());
+        dto.setMatchScore(history.getMatchScore());
+        dto.setStatus(history.getStatus());
+        dto.setAssignedAt(history.getAssignedAt());
+        dto.setCompletedAt(history.getCompletedAt());
+        return dto;
     }
 
     /**
@@ -167,13 +278,15 @@ public class AssignmentService {
     public List<TaskAssignmentDto> matchAllPendingTasks() {
         List<TaskDto> pendingTasks = getPendingTasks();
         List<TaskAssignmentDto> assignments = new ArrayList<>();
+        Set<Long> assignedPersonIds = new HashSet<>();
 
         for (TaskDto task : pendingTasks) {
             try {
-                TaskAssignmentDto assignment = matchTaskToPerson(task);
+                TaskAssignmentDto assignment = matchTaskToPerson(task, assignedPersonIds);
+                assignedPersonIds.add(assignment.getAssignedPerson().getId());
                 assignments.add(assignment);
             } catch (Exception e) {
-                System.err.println("Failed to assign task " + task.getId() + ": " + e.getMessage());
+                log.error("Failed to assign task {}: {}", task.getId(), e.getMessage());
             }
         }
 
@@ -577,8 +690,22 @@ public class AssignmentService {
         dto.setUpdatedAt(person.getUpdatedAt());
         dto.setDisabled(person.isDisabled());
 
-        // Note: Skills, MedicalCondition, and EmergencyContacts would need separate mapping
-        // if you want to include them in the DTO
+        // Map skills so Gemini has skills context for matching
+        if (person.getSkills() != null) {
+            List<com.example.personnel_service.dto.SkillDto> skillDtos = person.getSkills().stream()
+                    .filter(skill -> !skill.isDisabled())
+                    .map(skill -> {
+                        com.example.personnel_service.dto.SkillDto sdto = new com.example.personnel_service.dto.SkillDto();
+                        sdto.setId(skill.getId());
+                        sdto.setSkillName(skill.getProfession());
+                        sdto.setExperienceYears(skill.getExperienceYears());
+                        sdto.setMissionCount(skill.getMissionCount());
+                        sdto.setProficiencyLevel(skill.getLevel());
+                        return sdto;
+                    })
+                    .collect(Collectors.toList());
+            dto.setSkills(skillDtos);
+        }
 
         return dto;
     }
