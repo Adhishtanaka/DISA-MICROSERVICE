@@ -31,6 +31,7 @@ graph TD
     FE -->|"/api/shelters*"| SHE["Shelter Service\n:8085"]
     FE -->|"/api/assessments*"| ASS["Assessment Service\n:8087"]
     FE -->|"/api/v1/tasks*"| TSK["Task Service\n:8088"]
+    FE -->|"/api/personnel*"| PER["Personnel Service\n:8084"]
 
     AUTH --> PG[("PostgreSQL\nauth_db")]
     INC --> PG2[("PostgreSQL\nincident_db")]
@@ -39,13 +40,20 @@ graph TD
     SHE --> PG5[("PostgreSQL\nshelter_db")]
     ASS --> PG6[("PostgreSQL\nassessment_db")]
     TSK --> PG7[("PostgreSQL\ntask_db")]
+    PER --> PG8[("PostgreSQL\npersonnel_db")]
 
-    INC -->|"publishes events"| RMQ[["RabbitMQ\ndisaster.topic.exchange"]]
-    RES -->|"publishes events"| RMQ
-    ASS -->|"publishes events"| RMQ
+    INC -->|"incident.created\nincident.escalated"| RMQ[["RabbitMQ\ndisaster.topic.exchange"]]
+    RES -->|"resource.critical_low"| RMQ
+    ASS -->|"assessment.completed"| RMQ
+    TSK -->|"task.assigned"| RMQ
+    PER -->|"personnel.status.changed\npersonnel.available"| RMQ
+
     RMQ -->|"subscribes"| MIS
     RMQ -->|"subscribes"| SHE
     RMQ -->|"subscribes"| TSK
+    RMQ -->|"subscribes"| PER
+
+    PER -.->|"HTTP (TaskClient)"| TSK
 ```
 
 Each service has its own PostgreSQL database. The frontend's `docker-compose.yml` spins up a single shared PostgreSQL instance with all databases for full-stack deployment.
@@ -62,35 +70,98 @@ Each service has its own PostgreSQL database. The frontend's `docker-compose.yml
 | **resource-service** | 8089 | resource_db | Track equipment and supplies; publishes low-stock alerts |
 | **shelter-service** | 8085 | shelter_db | Register shelters, manage capacity, handle check-ins |
 | **assessment-service** | 8087 | assessment_db | Conduct damage assessments with photo uploads; publishes assessment.completed events |
-| **task-service** | 8088 | task_db | Create, assign, and complete response tasks |
-| **personnel-service** | 8084 | personnel_service | Manage responder profiles with skills and medical data; AI-powered task matching |
+| **task-service** | 8088 | task_db | Create, assign, and complete response tasks; publishes task.assigned events |
+| **personnel-service** | 8084 | personnel_db | Manage responder profiles, skills, and medical records; AI-powered task-to-personnel matching |
 
 ### auth-service
 Issues JWT tokens that all other services validate. Supports four roles (`ADMIN`, `COORDINATOR`, `RESPONDER`, `VOLUNTEER`). Exposes `/api/auth/register`, `/api/auth/login`, `/api/auth/validate`, and `/api/auth/profile`.
 
+**Key endpoints:** `POST /api/auth/register`, `POST /api/auth/login`, `GET /api/auth/profile`, `GET /api/auth/validate`
+
 ### incident-service
-The primary event source. When an incident is created or its severity escalates, it publishes a RabbitMQ event that downstream services react to automatically.
+The primary event source for the whole system. When an incident is created, it publishes `incident.created` on RabbitMQ so mission-service and shelter-service react automatically. When a severity escalation is triggered via the `/escalate` endpoint, it publishes `incident.escalated` so mission-service can update active missions. Also supports status transitions (REPORTED → ACTIVE → RESOLVED).
+
+**Key endpoints:** `POST /api/incidents`, `GET /api/incidents`, `GET /api/incidents/{id}`, `PUT /api/incidents/{id}`, `PUT /api/incidents/{id}/status?status=`, `PUT /api/incidents/{id}/escalate`, `DELETE /api/incidents/{id}`, `GET /api/incidents/status/{status}`
+
+**Publishes:** `incident.created`, `incident.escalated`
 
 ### mission-service
-Subscribes to incident and resource events. When a new incident arrives, a coordinator can create a mission linked to it. Missions track assigned teams, status, and type (SEARCH_AND_RESCUE, EVACUATION, MEDICAL_SUPPORT, etc.).
+Subscribes to incident and resource events. When a new incident arrives the service logs it so coordinators can create a linked mission. When resources fall critically low, the mission service is notified. Missions track assigned teams, status, and type (`SEARCH_AND_RESCUE`, `EVACUATION`, `MEDICAL_SUPPORT`, `LOGISTICS`, `COMMUNICATION`).
+
+**Key endpoints:** `POST /missions`, `GET /missions`, `GET /missions/{id}`, `PUT /missions/{id}`, `PATCH /missions/{id}/status`, `DELETE /missions/{id}`
+
+**Subscribes to:** `incident.created` → `mission.incident.created.queue`, `incident.escalated` → `mission.incident.escalated.queue`, `resource.critical_low` → `mission.resource.critical_low.queue`
 
 ### resource-service
-Tracks physical resources (vehicles, medical kits, generators, etc.) by type, quantity, and status. Publishes a `resource.critical_low` event when stock falls below a threshold so mission coordinators can be alerted.
+Tracks physical resources (vehicles, medical kits, generators, water supplies, etc.) by type, quantity, and status. Publishes a `resource.critical_low` event when stock falls below a configurable threshold so mission coordinators can be alerted. Supports quantity decrement when resources are consumed during operations.
+
+**Key endpoints:** `POST /api/resources`, `GET /api/resources`, `GET /api/resources/{id}`, `PUT /api/resources/{id}`, `PATCH /api/resources/{id}/decrement`, `DELETE /api/resources/{id}`
+
+**Publishes:** `resource.critical_low`
 
 ### shelter-service
-Manages temporary shelters. Subscribes to `incident.created` events so new shelters can be pre-positioned. Supports capacity tracking and resident check-in / check-out.
+Manages temporary shelters. Subscribes to `incident.created` so coordinators know to pre-position shelters near affected areas. Supports capacity tracking with real-time occupancy counts and resident check-in / check-out.
+
+**Key endpoints:** `POST /api/shelters`, `GET /api/shelters`, `GET /api/shelters/{id}`, `PUT /api/shelters/{id}`, `POST /api/shelters/{id}/checkin`, `POST /api/shelters/{id}/checkout`, `DELETE /api/shelters/{id}`
+
+**Subscribes to:** `incident.created` → `shelter.incident.created.queue`
 
 ### assessment-service
-Field responders submit damage assessments with photos. Optionally uses the Gemini API to assist with damage classification. On completion, publishes an `assessment.completed` event so task-service can auto-generate tasks from required actions.
+Field responders submit damage assessments linked to an incident, including photo evidence. Optionally uses the Gemini AI API to assist with damage classification. On completion, publishes an `assessment.completed` event so task-service can auto-generate remediation tasks from the required actions.
+
+**Key endpoints:** `POST /api/assessments` (multipart), `GET /api/assessments`, `GET /api/assessments/{id}`, `GET /api/assessments/incident/{incidentId}`, `PUT /api/assessments/{id}`, `DELETE /api/assessments/{id}`
+
+**Publishes:** `assessment.completed`
 
 ### task-service
-Granular task tracking (repair a road, set up comms, etc.). Tasks can be assigned to a responder by username and marked complete.
+Granular task tracking (repair a road, set up communications, deliver supplies, etc.). Tasks can be linked to an incident or mission, assigned to a responder by username, and marked complete. Subscribes to `assessment.completed` to auto-create tasks from field assessment actions. When a task is assigned it publishes `task.assigned` so personnel-service can update responder availability.
+
+**Key endpoints:** `POST /api/v1/tasks`, `GET /api/v1/tasks`, `GET /api/v1/tasks/{id}`, `PUT /api/v1/tasks/{id}`, `PATCH /api/v1/tasks/{id}/complete`, `DELETE /api/v1/tasks/{id}`
+
+**Subscribes to:** `assessment.completed` → `assessment.completed.queue`
+
+**Publishes:** `task.assigned`
+
+### personnel-service
+Manages the full profile of every disaster-response personnel, covering personal data, skills, and health information. Supports soft-delete (disable without removing records). Uses **Gemini AI** to match pending tasks to the best-suited available responder based on skills, location, and task requirements. Also maintains an HTTP client to call task-service directly for fetching pending tasks.
+
+**Data managed per person:**
+- Core profile: name, contact, role, availability status
+- Skills: type, proficiency level, certification date (supports bulk create/update/soft-delete)
+- Medical record: allergies, chronic conditions, medications, injury history, physical limitations
+- Emergency contacts
+- Documents (certifications, IDs)
+
+**Key endpoints:**
+
+| Group | Endpoints |
+|---|---|
+| Person | `GET/POST /api/personnel/person`, `GET/PUT /api/personnel/person/{id}`, `PATCH /api/personnel/person/{id}` (soft-delete), `DELETE /api/personnel/person/{id}` |
+| Skills | `GET/POST /api/personnel/skills`, `GET/PUT /api/personnel/skills/{id}`, `PATCH /api/personnel/skills/{id}` (soft-delete), `DELETE /api/personnel/skills/{id}` |
+| Assignments | `GET /api/personnel/assignments/available-persons`, `GET /api/personnel/assignments/pending-tasks`, `POST /api/personnel/assignments/match-task`, `POST /api/personnel/assignments/match-all-pending` |
+| Medical | `/api/personnel/allergies`, `/api/personnel/chronic-conditions`, `/api/personnel/medications`, `/api/personnel/injuries`, `/api/personnel/physical-limitations` |
+| Other | `/api/personnel/emergency-contacts`, `/api/personnel/documents` |
+
+**Subscribes to:** `task.assigned` → `personnel.task.assigned.queue` (updates responder status when assigned to a task)
+
+**Publishes:** `personnel.status.changed`, `personnel.available` (notifies task-service when a responder becomes free)
 
 ---
 
 ## Event Flow (RabbitMQ)
 
-All events are published to the `disaster.topic.exchange` topic exchange and routed to service-specific queues to avoid competing consumers.
+RabbitMQ decouples services so they can react to each other's events without direct HTTP dependencies. All events flow through the **`disaster.topic.exchange`** (topic type), routed by a dotted routing key to service-specific durable queues. Each receiving service has its own named queue so multiple subscribers independently receive the same event without competing.
+
+### Why RabbitMQ?
+
+| Scenario | What triggers it | Who reacts |
+|---|---|---|
+| New incident reported | `incident.created` | Mission-service logs it for coordinator action; shelter-service pre-positions nearby shelters |
+| Incident severity escalated | `incident.escalated` | Mission-service updates linked active missions |
+| Resource stock critically low | `resource.critical_low` | Mission-service alerts coordinators to request resupply |
+| Field assessment submitted | `assessment.completed` | Task-service auto-creates remediation tasks from required actions |
+| Task assigned to responder | `task.assigned` | Personnel-service updates responder's availability status |
+| Responder becomes free | `personnel.available` | Task-service can consider them for new pending tasks |
 
 ```mermaid
 sequenceDiagram
@@ -101,22 +172,40 @@ sequenceDiagram
     participant MIS as Mission Service
     participant SHE as Shelter Service
     participant TSK as Task Service
+    participant PER as Personnel Service
 
-    INC->>RMQ: incident.created (routing key)
+    INC->>RMQ: incident.created
     RMQ-->>MIS: mission.incident.created.queue
     RMQ-->>SHE: shelter.incident.created.queue
 
-    INC->>RMQ: incident.escalated (routing key)
+    INC->>RMQ: incident.escalated
     RMQ-->>MIS: mission.incident.escalated.queue
 
-    RES->>RMQ: resource.critical_low (routing key)
+    RES->>RMQ: resource.critical_low
     RMQ-->>MIS: mission.resource.critical_low.queue
 
-    ASS->>RMQ: assessment.completed (routing key)
+    ASS->>RMQ: assessment.completed
     RMQ-->>TSK: assessment.completed.queue
+
+    TSK->>RMQ: task.assigned
+    RMQ-->>PER: personnel.task.assigned.queue
+
+    PER->>RMQ: personnel.status.changed
+    PER->>RMQ: personnel.available
 ```
 
-**Each service has its own named queue** to avoid competing consumers. Mission and shelter services independently receive `incident.created`; task-service receives `assessment.completed` to auto-generate tasks.
+### Queue reference
+
+| Routing Key | Publisher | Queue | Subscriber |
+|---|---|---|---|
+| `incident.created` | Incident | `mission.incident.created.queue` | Mission |
+| `incident.created` | Incident | `shelter.incident.created.queue` | Shelter |
+| `incident.escalated` | Incident | `mission.incident.escalated.queue` | Mission |
+| `resource.critical_low` | Resource | `mission.resource.critical_low.queue` | Mission |
+| `assessment.completed` | Assessment | `assessment.completed.queue` | Task |
+| `task.assigned` | Task | `personnel.task.assigned.queue` | Personnel |
+| `personnel.status.changed` | Personnel | `personnel.status.queue` | — (future) |
+| `personnel.available` | Personnel | — | — (future) |
 
 ---
 
@@ -583,16 +672,16 @@ echo "App: http://$FRONTEND_URL"
 
 ### Service environment variables reference
 
-| Service | `DB_URL` database | RabbitMQ needed |
+| Service | `DB_URL` database | RabbitMQ role |
 |---|---|---|
-| auth-service | `auth_db` | No |
-| incident-service | `incident_db` | Yes (publisher) |
-| mission-service | `mission_db` | Yes (subscriber) |
-| resource-service | `resource_db` | Yes (publisher) |
-| shelter-service | `shelter_db` | Yes (subscriber) |
-| assessment-service | `assessment_db` | Yes (publisher) |
-| task-service | `task_db` | Yes (subscriber) |
-| personnel-service | `personnel_db` | Yes (subscriber) |
+| auth-service | `auth_db` | None |
+| incident-service | `incident_db` | Publisher (`incident.created`, `incident.escalated`) |
+| mission-service | `mission_db` | Subscriber (`incident.created`, `incident.escalated`, `resource.critical_low`) |
+| resource-service | `resource_db` | Publisher (`resource.critical_low`) |
+| shelter-service | `shelter_db` | Subscriber (`incident.created`) |
+| assessment-service | `assessment_db` | Publisher (`assessment.completed`) |
+| task-service | `task_db` | Subscriber (`assessment.completed`) + Publisher (`task.assigned`) |
+| personnel-service | `personnel_db` | Subscriber (`task.assigned`) + Publisher (`personnel.status.changed`, `personnel.available`) |
 
 All services accept these environment variables (with defaults shown):
 
