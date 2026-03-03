@@ -1,0 +1,99 @@
+### Auth Service Tests
+### PORT 8081 — No JWT required for register/login
+
+@baseUrl = http://localhost:8081/api/auth
+
+### ── Register: ADMIN ──────────────────────────────────────────
+POST {{baseUrl}}/register
+Content-Type: application/json
+
+{
+  "username": "admin",
+  "email": "admin@disa.local",
+  "password": "Admin123!",
+  "fullName": "System Admin",
+  "role": "ADMIN"
+}
+
+### ── Register: COORDINATOR ───────────────────────────────────
+POST {{baseUrl}}/register
+Content-Type: application/json
+
+{
+  "username": "coord1",
+  "email": "coord1@disa.local",
+  "password": "Coord123!",
+  "fullName": "Jane Coordinator",
+  "role": "COORDINATOR"
+}
+
+### ── Register: RESPONDER ─────────────────────────────────────
+POST {{baseUrl}}/register
+Content-Type: application/json
+
+{
+  "username": "resp1",
+  "email": "resp1@disa.local",
+  "password": "Resp123!",
+  "fullName": "John Responder",
+  "role": "RESPONDER"
+}
+
+### ── Register: VOLUNTEER ─────────────────────────────────────
+POST {{baseUrl}}/register
+Content-Type: application/json
+
+{
+  "username": "vol1",
+  "email": "vol1@disa.local",
+  "password": "Vol123!",
+  "fullName": "Alice Volunteer",
+  "role": "VOLUNTEER"
+}
+
+### ── Login: ADMIN — copy token to @adminToken ────────────────
+POST {{baseUrl}}/login
+Content-Type: application/json
+
+{
+  "username": "admin",
+  "password": "Admin123!"
+}
+
+### ── Login: COORDINATOR ──────────────────────────────────────
+POST {{baseUrl}}/login
+Content-Type: application/json
+
+{
+  "username": "coord1",
+  "password": "Coord123!"
+}
+
+### ── Login: RESPONDER ────────────────────────────────────────
+POST {{baseUrl}}/login
+Content-Type: application/json
+
+{
+  "username": "resp1",
+  "password": "Resp123!"
+}
+
+### ── Login: VOLUNTEER ────────────────────────────────────────
+POST {{baseUrl}}/login
+Content-Type: application/json
+
+{
+  "username": "vol1",
+  "password": "Vol123!"
+}
+
+### ── Get own profile (needs token) ──────────────────────────
+# Replace <TOKEN> with a token from the login responses above
+@token = <TOKEN>
+
+GET {{baseUrl}}/profile
+Authorization: Bearer {{token}}
+
+### ── Validate token ──────────────────────────────────────────
+GET {{baseUrl}}/validate
+Authorization: Bearer {{token}}

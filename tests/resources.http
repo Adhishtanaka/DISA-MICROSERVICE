@@ -1,0 +1,170 @@
+### Resource Service Tests
+### PORT 8089
+
+@baseUrl = http://localhost:8089/api/resources
+
+@adminToken       = <ADMIN_TOKEN>
+@coordinatorToken = <COORDINATOR_TOKEN>
+@responderToken   = <RESPONDER_TOKEN>
+@volunteerToken   = <VOLUNTEER_TOKEN>
+
+### ── GET all resources — VOLUNTEER (allowed ✅) ────────────
+GET {{baseUrl}}
+Authorization: Bearer {{volunteerToken}}
+
+### ── GET all resources — RESPONDER (allowed ✅) ────────────
+GET {{baseUrl}}
+Authorization: Bearer {{responderToken}}
+
+### ── GET resource by ID — VOLUNTEER (allowed ✅) ───────────
+GET {{baseUrl}}/1
+Authorization: Bearer {{volunteerToken}}
+
+### ── GET resources by type — VOLUNTEER (allowed ✅) ────────
+GET {{baseUrl}}/type/MEDICAL
+Authorization: Bearer {{volunteerToken}}
+
+### ── GET low-stock resources — COORDINATOR (allowed ✅) ─────
+GET {{baseUrl}}/low-stock
+Authorization: Bearer {{coordinatorToken}}
+
+### ── POST create resource — COORDINATOR (allowed ✅) ────────
+POST {{baseUrl}}
+Content-Type: application/json
+Authorization: Bearer {{coordinatorToken}}
+
+{
+  "resourceCode": "MED-001",
+  "name": "First Aid Kits",
+  "type": "MEDICAL",
+  "unit": "kits",
+  "currentStock": 150,
+  "threshold": 30,
+  "location": "Warehouse A, Sector 2",
+  "description": "Standard first aid kits for emergency response"
+}
+
+### ── POST create resource — ADMIN (allowed ✅) ──────────────
+POST {{baseUrl}}
+Content-Type: application/json
+Authorization: Bearer {{adminToken}}
+
+{
+  "resourceCode": "FOOD-001",
+  "name": "Emergency Food Packs",
+  "type": "FOOD",
+  "unit": "packs",
+  "currentStock": 500,
+  "threshold": 100,
+  "location": "Warehouse B, Sector 1",
+  "description": "3-day emergency food supplies"
+}
+
+### ── POST create resource — RESPONDER (expect 403 ❌) ───────
+POST {{baseUrl}}
+Content-Type: application/json
+Authorization: Bearer {{responderToken}}
+
+{
+  "resourceCode": "REJECTED-001",
+  "name": "Should be rejected",
+  "type": "FOOD",
+  "unit": "units",
+  "currentStock": 10,
+  "threshold": 5
+}
+
+### ── POST create resource — VOLUNTEER (expect 403 ❌) ───────
+POST {{baseUrl}}
+Content-Type: application/json
+Authorization: Bearer {{volunteerToken}}
+
+{
+  "resourceCode": "REJECTED-002",
+  "name": "Should be rejected",
+  "type": "FOOD",
+  "unit": "units",
+  "currentStock": 10,
+  "threshold": 5
+}
+
+### ── POST decrement stock — RESPONDER (allowed ✅) ──────────
+POST {{baseUrl}}/1/decrement
+Content-Type: application/json
+Authorization: Bearer {{responderToken}}
+
+{
+  "quantity": 5
+}
+
+### ── POST decrement stock — COORDINATOR (allowed ✅) ────────
+POST {{baseUrl}}/1/decrement
+Content-Type: application/json
+Authorization: Bearer {{coordinatorToken}}
+
+{
+  "quantity": 10
+}
+
+### ── POST decrement stock — ADMIN (allowed ✅) ──────────────
+POST {{baseUrl}}/1/decrement
+Content-Type: application/json
+Authorization: Bearer {{adminToken}}
+
+{
+  "quantity": 3
+}
+
+### ── POST decrement stock — VOLUNTEER (expect 403 ❌) ───────
+POST {{baseUrl}}/1/decrement
+Content-Type: application/json
+Authorization: Bearer {{volunteerToken}}
+
+{
+  "quantity": 1
+}
+
+### ── PUT update resource — COORDINATOR (allowed ✅) ─────────
+PUT {{baseUrl}}/1
+Content-Type: application/json
+Authorization: Bearer {{coordinatorToken}}
+
+{
+  "name": "First Aid Kits (Restocked)",
+  "currentStock": 200,
+  "threshold": 40,
+  "location": "Warehouse A, Sector 2",
+  "description": "Restocked standard first aid kits"
+}
+
+### ── PUT update resource — RESPONDER (expect 403 ❌) ────────
+PUT {{baseUrl}}/1
+Content-Type: application/json
+Authorization: Bearer {{responderToken}}
+
+{
+  "name": "Should be rejected",
+  "currentStock": 999
+}
+
+### ── PUT update resource — VOLUNTEER (expect 403 ❌) ────────
+PUT {{baseUrl}}/1
+Content-Type: application/json
+Authorization: Bearer {{volunteerToken}}
+
+{
+  "name": "Should be rejected",
+  "currentStock": 999
+}
+
+### ── DELETE resource — ADMIN (allowed ✅) ───────────────────
+DELETE {{baseUrl}}/1
+Authorization: Bearer {{adminToken}}
+
+### ── DELETE resource — COORDINATOR (expect 403 ❌) ──────────
+DELETE {{baseUrl}}/1
+Authorization: Bearer {{coordinatorToken}}
+
+### ── DELETE resource — RESPONDER (expect 403 ❌) ────────────
+DELETE {{baseUrl}}/1
+Authorization: Bearer {{responderToken}}

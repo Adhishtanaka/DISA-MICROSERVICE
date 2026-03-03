@@ -17,6 +17,9 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.HashMap;
+import java.util.Map;
+
 @Service
 @RequiredArgsConstructor
 public class AuthServiceImpl implements AuthService {
@@ -54,9 +57,11 @@ public class AuthServiceImpl implements AuthService {
 
         userRepository.save(user);
 
-        String token = jwtService.generateToken(userDetailsService.loadUserByUsername(user.getUsername()));
+        Map<String, Object> claims = new HashMap<>();
+        claims.put("role", user.getRole().name());
+        String token = jwtService.generateToken(claims, userDetailsService.loadUserByUsername(user.getUsername()));
 
-        return new LoginResponse(token, user.getUsername(), user.getEmail(), user.getRole(), user.getFullName());
+        return new LoginResponse(token, user.getId(), user.getUsername(), user.getEmail(), user.getRole(), user.getFullName());
     }
 
     /**
@@ -75,9 +80,11 @@ public class AuthServiceImpl implements AuthService {
         User user = userRepository.findByUsername(request.getUsername())
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        String token = jwtService.generateToken((UserDetails) authentication.getPrincipal());
+        Map<String, Object> claims = new HashMap<>();
+        claims.put("role", user.getRole().name());
+        String token = jwtService.generateToken(claims, (UserDetails) authentication.getPrincipal());
 
-        return new LoginResponse(token, user.getUsername(), user.getEmail(), user.getRole(), user.getFullName());
+        return new LoginResponse(token, user.getId(), user.getUsername(), user.getEmail(), user.getRole(), user.getFullName());
     }
 
     /**

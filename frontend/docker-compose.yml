@@ -146,6 +146,7 @@ services:
       DB_URL: jdbc:postgresql://incident-db:5432/incident_db
       DB_USERNAME: postgres
       DB_PASSWORD: postgres
+      JWT_SECRET: dev-secret-key-change-in-production-at-least-32-chars
       RABBITMQ_HOST: rabbitmq
       RABBITMQ_PORT: 5672
       RABBITMQ_USERNAME: guest
@@ -167,6 +168,7 @@ services:
       DB_URL: jdbc:postgresql://mission-db:5432/mission_db
       DB_USERNAME: postgres
       DB_PASSWORD: postgres
+      JWT_SECRET: dev-secret-key-change-in-production-at-least-32-chars
       RABBITMQ_HOST: rabbitmq
       RABBITMQ_PORT: 5672
       RABBITMQ_USERNAME: guest
@@ -189,6 +191,7 @@ services:
       DB_URL: jdbc:postgresql://resource-db:5432/resource_db
       DB_USERNAME: postgres
       DB_PASSWORD: postgres
+      JWT_SECRET: dev-secret-key-change-in-production-at-least-32-chars
       RABBITMQ_HOST: rabbitmq
       RABBITMQ_PORT: 5672
       RABBITMQ_USERNAME: guest
@@ -210,6 +213,7 @@ services:
       DB_URL: jdbc:postgresql://shelter-db:5432/shelter_db
       DB_USERNAME: postgres
       DB_PASSWORD: postgres
+      JWT_SECRET: dev-secret-key-change-in-production-at-least-32-chars
       RABBITMQ_HOST: rabbitmq
       RABBITMQ_PORT: 5672
       RABBITMQ_USERNAME: guest
@@ -231,6 +235,7 @@ services:
       DB_URL: jdbc:postgresql://assessment-db:5432/assessment_db
       DB_USERNAME: postgres
       DB_PASSWORD: postgres
+      JWT_SECRET: dev-secret-key-change-in-production-at-least-32-chars
       RABBITMQ_HOST: rabbitmq
       RABBITMQ_PORT: 5672
       RABBITMQ_USERNAME: guest
@@ -254,6 +259,7 @@ services:
       DB_URL: jdbc:postgresql://task-db:5432/task_db
       DB_USERNAME: postgres
       DB_PASSWORD: postgres
+      JWT_SECRET: dev-secret-key-change-in-production-at-least-32-chars
       RABBITMQ_HOST: rabbitmq
       RABBITMQ_PORT: 5672
       RABBITMQ_USERNAME: guest

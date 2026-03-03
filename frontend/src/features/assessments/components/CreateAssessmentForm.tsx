@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { IncidentSelectField } from "../../../components/ui/IncidentSelectField";
 import type { CreateAssessmentRequest, DamageSeverity } from "../types/assessment.types";
 
 interface CreateAssessmentFormProps {
@@ -7,8 +8,9 @@ interface CreateAssessmentFormProps {
 }
 
 export default function CreateAssessmentForm({ onSubmit, onCancel }: CreateAssessmentFormProps) {
-  const [formData, setFormData] = useState<CreateAssessmentRequest>({
-    incidentId: 1,
+  const [incidentId, setIncidentId] = useState<number | undefined>(undefined);
+  const [incidentError, setIncidentError] = useState(false);
+  const [formData, setFormData] = useState<Omit<CreateAssessmentRequest, 'incidentId'>>({
     assessorId: 301,
     assessorName: "",
     severity: "MODERATE",
@@ -25,7 +27,12 @@ export default function CreateAssessmentForm({ onSubmit, onCancel }: CreateAsses
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onSubmit(formData);
+    if (!incidentId) {
+      setIncidentError(true);
+      return;
+    }
+    setIncidentError(false);
+    onSubmit({ ...formData, incidentId });
   };
 
   const addAction = () => {
@@ -49,28 +56,27 @@ export default function CreateAssessmentForm({ onSubmit, onCancel }: CreateAsses
     <form onSubmit={handleSubmit} className="space-y-4 bg-white p-6 rounded-lg shadow">
       <h2 className="text-xl font-semibold mb-4">Create New Assessment</h2>
 
-      <div className="grid grid-cols-2 gap-4">
-        <div>
-          <label className="block text-sm font-medium mb-1">Incident ID</label>
-          <input
-            type="number"
-            required
-            value={formData.incidentId}
-            onChange={(e) => setFormData({ ...formData, incidentId: Number(e.target.value) })}
-            className="w-full border rounded px-3 py-2"
-          />
-        </div>
+      <div>
+        <IncidentSelectField
+          label="Incident"
+          required
+          value={incidentId}
+          onChange={(id) => { setIncidentId(id); setIncidentError(false); }}
+        />
+        {incidentError && (
+          <p className="mt-1 text-xs text-red-600">Please select an incident.</p>
+        )}
+      </div>
 
-        <div>
-          <label className="block text-sm font-medium mb-1">Assessor ID</label>
-          <input
-            type="number"
-            required
-            value={formData.assessorId}
-            onChange={(e) => setFormData({ ...formData, assessorId: Number(e.target.value) })}
-            className="w-full border rounded px-3 py-2"
-          />
-        </div>
+      <div>
+        <label className="block text-sm font-medium mb-1">Assessor ID</label>
+        <input
+          type="number"
+          required
+          value={formData.assessorId}
+          onChange={(e) => setFormData({ ...formData, assessorId: Number(e.target.value) })}
+          className="w-full border rounded px-3 py-2"
+        />
       </div>
 
       <div>

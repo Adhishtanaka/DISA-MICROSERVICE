@@ -1,0 +1,115 @@
+### Shelter Service Tests
+### PORT 8085
+
+@baseUrl = http://localhost:8085/api/shelters
+
+@adminToken       = <ADMIN_TOKEN>
+@coordinatorToken = <COORDINATOR_TOKEN>
+@responderToken   = <RESPONDER_TOKEN>
+@volunteerToken   = <VOLUNTEER_TOKEN>
+
+### ── GET all shelters — VOLUNTEER (allowed ✅) ──────────────
+GET {{baseUrl}}
+Authorization: Bearer {{volunteerToken}}
+
+### ── GET available shelters — all roles ─────────────────────
+GET {{baseUrl}}/available
+Authorization: Bearer {{volunteerToken}}
+
+### ── POST create shelter — COORDINATOR (allowed ✅) ─────────
+POST {{baseUrl}}
+Content-Type: application/json
+Authorization: Bearer {{coordinatorToken}}
+
+{
+  "name": "Community Hall Shelter A",
+  "address": "12 Main Street, District 4",
+  "totalCapacity": 200,
+  "latitude": 6.9271,
+  "longitude": 79.8612,
+  "contactPhone": "+94-11-000-0001",
+  "facilities": "Water, Food, Medical"
+}
+
+### ── POST create shelter — VOLUNTEER (expect 403 ❌) ────────
+POST {{baseUrl}}
+Content-Type: application/json
+Authorization: Bearer {{volunteerToken}}
+
+{
+  "name": "Should be rejected",
+  "address": "Nowhere",
+  "totalCapacity": 10
+}
+
+### ── GET shelter by ID ───────────────────────────────────────
+GET {{baseUrl}}/1
+Authorization: Bearer {{volunteerToken}}
+
+### ── GET nearby shelters ─────────────────────────────────────
+GET {{baseUrl}}/nearby?latitude=6.9271&longitude=79.8612&radiusKm=20
+Authorization: Bearer {{responderToken}}
+
+### ── POST check-in — VOLUNTEER (allowed ✅) ─────────────────
+POST {{baseUrl}}/1/checkin
+Content-Type: application/json
+Authorization: Bearer {{volunteerToken}}
+
+{
+  "numberOfPeople": 15
+}
+
+### ── POST check-in — RESPONDER (allowed ✅) ─────────────────
+POST {{baseUrl}}/1/checkin
+Content-Type: application/json
+Authorization: Bearer {{responderToken}}
+
+{
+  "numberOfPeople": 30
+}
+
+### ── POST check-out — VOLUNTEER (allowed ✅) ────────────────
+POST {{baseUrl}}/1/checkout
+Content-Type: application/json
+Authorization: Bearer {{volunteerToken}}
+
+{
+  "numberOfPeople": 5
+}
+
+### ── PUT update shelter — COORDINATOR (allowed ✅) ──────────
+PUT {{baseUrl}}/1
+Content-Type: application/json
+Authorization: Bearer {{coordinatorToken}}
+
+{
+  "name": "Community Hall Shelter A (Extended)",
+  "address": "12 Main Street, District 4",
+  "totalCapacity": 350,
+  "latitude": 6.9271,
+  "longitude": 79.8612,
+  "contactPhone": "+94-11-000-0001",
+  "facilities": "Water, Food, Medical, Generator"
+}
+
+### ── PUT update shelter — RESPONDER (expect 403 ❌) ─────────
+PUT {{baseUrl}}/1
+Content-Type: application/json
+Authorization: Bearer {{responderToken}}
+
+{
+  "name": "Should be rejected",
+  "totalCapacity": 10
+}
+
+### ── PUT update status — COORDINATOR (allowed ✅) ───────────
+PUT {{baseUrl}}/1/status?status=OPERATIONAL
+Authorization: Bearer {{coordinatorToken}}
+
+### ── DELETE shelter — ADMIN (allowed ✅) ────────────────────
+DELETE {{baseUrl}}/1
+Authorization: Bearer {{adminToken}}
+
+### ── DELETE shelter — COORDINATOR (expect 403 ❌) ───────────
+DELETE {{baseUrl}}/1
+Authorization: Bearer {{coordinatorToken}}

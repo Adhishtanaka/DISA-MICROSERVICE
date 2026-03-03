@@ -1,0 +1,136 @@
+### Task Service Tests
+### PORT 8088
+
+@baseUrl = http://localhost:8088/api/tasks
+
+@adminToken       = <ADMIN_TOKEN>
+@coordinatorToken = <COORDINATOR_TOKEN>
+@responderToken   = <RESPONDER_TOKEN>
+@volunteerToken   = <VOLUNTEER_TOKEN>
+
+### ── GET all tasks — VOLUNTEER (allowed ✅) ──────────────────
+GET {{baseUrl}}
+Authorization: Bearer {{volunteerToken}}
+
+### ── GET all tasks — RESPONDER (allowed ✅) ─────────────────
+GET {{baseUrl}}
+Authorization: Bearer {{responderToken}}
+
+### ── GET task by ID — VOLUNTEER (allowed ✅) ────────────────
+GET {{baseUrl}}/1
+Authorization: Bearer {{volunteerToken}}
+
+### ── POST create task — COORDINATOR (allowed ✅) ───────────
+POST {{baseUrl}}
+Content-Type: application/json
+Authorization: Bearer {{coordinatorToken}}
+
+{
+  "title": "Set up triage station",
+  "description": "Establish a medical triage station at District 4 shelter",
+  "priority": "HIGH",
+  "status": "PENDING",
+  "dueDate": "2025-12-31T18:00:00",
+  "assignedPersonnelId": 1,
+  "incidentId": 1
+}
+
+### ── POST create task — ADMIN (allowed ✅) ──────────────────
+POST {{baseUrl}}
+Content-Type: application/json
+Authorization: Bearer {{adminToken}}
+
+{
+  "title": "Coordinate supply delivery",
+  "description": "Organize logistics for food/water delivery to Sector 3",
+  "priority": "MEDIUM",
+  "status": "PENDING",
+  "dueDate": "2025-12-30T12:00:00",
+  "assignedPersonnelId": 2,
+  "incidentId": 1
+}
+
+### ── POST create task — RESPONDER (expect 403 ❌) ──────────
+POST {{baseUrl}}
+Content-Type: application/json
+Authorization: Bearer {{responderToken}}
+
+{
+  "title": "Should be rejected",
+  "description": "Responders cannot create tasks",
+  "priority": "LOW",
+  "status": "PENDING"
+}
+
+### ── POST create task — VOLUNTEER (expect 403 ❌) ──────────
+POST {{baseUrl}}
+Content-Type: application/json
+Authorization: Bearer {{volunteerToken}}
+
+{
+  "title": "Should be rejected",
+  "description": "Volunteers cannot create tasks",
+  "priority": "LOW",
+  "status": "PENDING"
+}
+
+### ── POST complete task — RESPONDER (allowed ✅) ────────────
+POST {{baseUrl}}/1/complete
+Authorization: Bearer {{responderToken}}
+
+### ── POST complete task — COORDINATOR (allowed ✅) ──────────
+POST {{baseUrl}}/1/complete
+Authorization: Bearer {{coordinatorToken}}
+
+### ── POST complete task — ADMIN (allowed ✅) ────────────────
+POST {{baseUrl}}/1/complete
+Authorization: Bearer {{adminToken}}
+
+### ── POST complete task — VOLUNTEER (expect 403 ❌) ─────────
+POST {{baseUrl}}/1/complete
+Authorization: Bearer {{volunteerToken}}
+
+### ── PUT update task — COORDINATOR (allowed ✅) ────────────
+PUT {{baseUrl}}/1
+Content-Type: application/json
+Authorization: Bearer {{coordinatorToken}}
+
+{
+  "title": "Set up triage station (Updated)",
+  "description": "Expanded triage to cover District 4 and District 5",
+  "priority": "HIGH",
+  "status": "IN_PROGRESS",
+  "dueDate": "2025-12-31T20:00:00"
+}
+
+### ── PUT update task — RESPONDER (expect 403 ❌) ───────────
+PUT {{baseUrl}}/1
+Content-Type: application/json
+Authorization: Bearer {{responderToken}}
+
+{
+  "title": "Should be rejected",
+  "status": "COMPLETED"
+}
+
+### ── PUT update task — VOLUNTEER (expect 403 ❌) ───────────
+PUT {{baseUrl}}/1
+Content-Type: application/json
+Authorization: Bearer {{volunteerToken}}
+
+{
+  "title": "Should be rejected",
+  "status": "COMPLETED"
+}
+
+### ── DELETE task — ADMIN (allowed ✅) ───────────────────────
+DELETE {{baseUrl}}/1
+Authorization: Bearer {{adminToken}}
+
+### ── DELETE task — COORDINATOR (expect 403 ❌) ─────────────
+DELETE {{baseUrl}}/1
+Authorization: Bearer {{coordinatorToken}}
+
+### ── DELETE task — RESPONDER (expect 403 ❌) ───────────────
+DELETE {{baseUrl}}/1
+Authorization: Bearer {{responderToken}}

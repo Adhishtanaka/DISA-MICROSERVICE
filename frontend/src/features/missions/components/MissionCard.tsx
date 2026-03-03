@@ -2,6 +2,7 @@ import { MapPin, Truck, ChevronRight, Calendar } from 'lucide-react';
 import { Card, CardBody } from '../../../components/ui/Card';
 import { Button } from '../../../components/ui/Button';
 import { MissionStatusBadge, MissionTypeBadge } from './MissionBadges';
+import { useRole } from '../../auth';
 import type { Mission } from '../types/mission.types';
 
 interface MissionCardProps {
@@ -26,6 +27,7 @@ export function MissionCard({
   onUpdateStatus,
   onDelete,
 }: MissionCardProps) {
+  const { canDelete, canUpdateMissionStatus } = useRole();
   return (
     <Card className="transition-shadow hover:shadow-md">
       <CardBody>
@@ -80,22 +82,26 @@ export function MissionCard({
           >
             Details
           </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => onUpdateStatus(mission)}
-            className="flex-1"
-            disabled={mission.status === 'COMPLETED' || mission.status === 'CANCELLED'}
-          >
-            Update Status
-          </Button>
-          <Button
-            variant="danger"
-            size="sm"
-            onClick={() => onDelete(mission)}
-          >
-            Delete
-          </Button>
+          {canUpdateMissionStatus && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => onUpdateStatus(mission)}
+              className="flex-1"
+              disabled={mission.status === 'COMPLETED' || mission.status === 'CANCELLED'}
+            >
+              Update Status
+            </Button>
+          )}
+          {canDelete && (
+            <Button
+              variant="danger"
+              size="sm"
+              onClick={() => onDelete(mission)}
+            >
+              Delete
+            </Button>
+          )}
         </div>
       </CardBody>
     </Card>

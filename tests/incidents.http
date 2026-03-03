@@ -1,0 +1,103 @@
+### Incident Service Tests
+### PORT 8083
+
+@baseUrl = http://localhost:8083/api/incidents
+
+# Paste tokens from auth.http login responses
+@adminToken      = <ADMIN_TOKEN>
+@coordinatorToken = <COORDINATOR_TOKEN>
+@responderToken  = <RESPONDER_TOKEN>
+@volunteerToken  = <VOLUNTEER_TOKEN>
+
+### ── GET all incidents — VOLUNTEER (allowed ✅) ─────────────
+GET {{baseUrl}}?page=0&size=10
+Authorization: Bearer {{volunteerToken}}
+
+### ── GET all incidents — no token (expect 401 ❌) ───────────
+GET {{baseUrl}}?page=0&size=10
+
+### ── POST create incident — RESPONDER (allowed ✅) ──────────
+POST {{baseUrl}}
+Content-Type: application/json
+Authorization: Bearer {{responderToken}}
+
+{
+  "title": "Flood in District 4",
+  "description": "Severe flooding affecting residential areas",
+  "severity": "HIGH",
+  "location": "District 4, Main Street",
+  "type": "FLOOD"
+}
+
+### ── POST create incident — COORDINATOR (allowed ✅) ────────
+POST {{baseUrl}}
+Content-Type: application/json
+Authorization: Bearer {{coordinatorToken}}
+
+{
+  "title": "Building Collapse",
+  "description": "3-storey building collapse near market",
+  "severity": "CRITICAL",
+  "location": "Central Market Area",
+  "type": "STRUCTURAL"
+}
+
+### ── POST create incident — VOLUNTEER (expect 403 ❌) ───────
+POST {{baseUrl}}
+Content-Type: application/json
+Authorization: Bearer {{volunteerToken}}
+
+{
+  "title": "Should be rejected",
+  "description": "Volunteer cannot create incidents",
+  "severity": "LOW",
+  "location": "Nowhere"
+}
+
+### ── GET incident by ID — VOLUNTEER (allowed ✅) ────────────
+GET {{baseUrl}}/1
+Authorization: Bearer {{volunteerToken}}
+
+### ── PUT update incident — COORDINATOR (allowed ✅) ─────────
+PUT {{baseUrl}}/1
+Content-Type: application/json
+Authorization: Bearer {{coordinatorToken}}
+
+{
+  "title": "Flood in District 4 (Updated)",
+  "description": "Flooding now affecting 500 households",
+  "severity": "CRITICAL",
+  "location": "District 4"
+}
+
+### ── PUT update incident — RESPONDER (expect 403 ❌) ────────
+PUT {{baseUrl}}/1
+Content-Type: application/json
+Authorization: Bearer {{responderToken}}
+
+{
+  "title": "Should be rejected",
+  "severity": "LOW"
+}
+
+### ── PUT escalate — COORDINATOR (allowed ✅) ────────────────
+PUT {{baseUrl}}/1/escalate
+Content-Type: application/json
+Authorization: Bearer {{coordinatorToken}}
+
+{
+  "reason": "Situation has worsened",
+  "newSeverity": "CRITICAL"
+}
+
+### ── PUT status update — ADMIN (allowed ✅) ─────────────────
+PUT {{baseUrl}}/1/status?status=IN_PROGRESS
+Authorization: Bearer {{adminToken}}
+
+### ── DELETE incident — ADMIN (allowed ✅) ───────────────────
+DELETE {{baseUrl}}/2
+Authorization: Bearer {{adminToken}}
+
+### ── DELETE incident — COORDINATOR (expect 403 ❌) ──────────
+DELETE {{baseUrl}}/1
+Authorization: Bearer {{coordinatorToken}}

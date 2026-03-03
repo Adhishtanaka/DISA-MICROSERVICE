@@ -1,6 +1,7 @@
 import { Badge } from '../../../components/ui/Badge';
 import { Button } from '../../../components/ui/Button';
 import { Card, CardBody } from '../../../components/ui/Card';
+import { useRole } from '../../auth';
 import type { Task } from '../types/task.types';
 
 const priorityVariant: Record<string, 'blue' | 'default' | 'in-progress' | 'cancelled'> = {
@@ -31,6 +32,7 @@ interface TaskCardProps {
 }
 
 export function TaskCard({ task, onComplete, onDelete }: TaskCardProps) {
+  const { canDelete, canOperate } = useRole();
   return (
     <Card>
       <CardBody>
@@ -76,14 +78,16 @@ export function TaskCard({ task, onComplete, onDelete }: TaskCardProps) {
             {new Date(task.createdAt).toLocaleDateString()}
           </span>
           <div className="flex gap-2">
-            {task.status !== 'COMPLETED' && (
+            {canOperate && task.status !== 'COMPLETED' && (
               <Button size="sm" variant="secondary" onClick={() => onComplete(task.id)}>
                 Complete
               </Button>
             )}
-            <Button size="sm" variant="danger" onClick={() => onDelete(task.id)}>
-              Delete
-            </Button>
+            {canDelete && (
+              <Button size="sm" variant="danger" onClick={() => onDelete(task.id)}>
+                Delete
+              </Button>
+            )}
           </div>
         </div>
       </CardBody>

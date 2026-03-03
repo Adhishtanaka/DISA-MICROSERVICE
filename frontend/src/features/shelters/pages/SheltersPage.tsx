@@ -2,11 +2,13 @@ import { useState } from "react";
 import { useShelters } from "../hooks/useShelters";
 import { ShelterList } from "../components/ShelterList";
 import { ShelterForm } from "../components/ShelterForm";
+import { useRole } from "../../auth";
 
 export function SheltersPage() {
   const [showForm, setShowForm] = useState(false);
   const [filterAvailable, setFilterAvailable] = useState(false);
   const { shelters, loading, error, refetch } = useShelters(filterAvailable);
+  const { canCreate } = useRole();
 
   const handleCreateSuccess = () => {
     setShowForm(false);
@@ -60,12 +62,14 @@ export function SheltersPage() {
         {/* Actions Bar */}
         <div className="bg-white rounded-lg shadow p-4 mb-6 flex flex-wrap gap-4 items-center justify-between">
           <div className="flex gap-3">
-            <button
-              onClick={() => setShowForm(true)}
-              className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors"
-            >
-              + Create Shelter
-            </button>
+            {canCreate && (
+              <button
+                onClick={() => setShowForm(true)}
+                className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors"
+              >
+                + Create Shelter
+              </button>
+            )}
             <button
               onClick={refetch}
               disabled={loading}

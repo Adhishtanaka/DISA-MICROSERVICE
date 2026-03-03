@@ -1,39 +1,46 @@
-/**
- * SecurityConfig.java
- *
- * Spring Security configuration for the Shelter Service.
- * Configures the HTTP security filter chain for the application.
- *
- * Current configuration:
- * - Disables CSRF protection (suitable for stateless REST APIs)
- * - Permits all incoming HTTP requests without authentication,
- *   including Swagger UI (/swagger-ui.html, /swagger-ui/**) and
- *   OpenAPI spec (/v3/api-docs/**) endpoints
- *
- * Note: This open configuration is intended for internal microservice
- * communication within a trusted network. In production, consider
- * adding JWT-based authentication or API gateway-level security.
- */
 package com.disa.shelter_service.config;
 
+import com.disa.shelter_service.security.JwtAuthenticationFilter;
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
 @EnableWebSecurity
+@RequiredArgsConstructor
 public class SecurityConfig {
 
+    private final JwtAuthenticationFilter jwtAuthenticationFilter;
+
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
             .csrf(AbstractHttpConfigurer::disable)
+            .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
-                .anyRequest().permitAll()
-            );
+                .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html").permitAll()
+                // Read — all authenticated
+                .requestMatchers(HttpMethod.GET, "/api/shelters/**").authenticated()
+                // Check-in / check-out — all authenticated roles
+                .requestMatchers(HttpMethod.POST, "/api/shelters/*/checkin").authenticated()
+                .requestMatchers(HttpMethod.POST, "/api/shelters/*/checkout").authenticated()
+                // Create — ADMIN, COORDINATOR
+                .requestMatchers(HttpMethod.POST, "/api/shelters").hasAnyRole("ADMIN", "COORDINATOR")
+                // Update / status — ADMIN, COORDINATOR
+                .requestMatchers(HttpMethod.PUT, "/api/shelters/**").hasAnyRole("ADMIN", "COORDINATOR")
+                // Delete — ADMIN only
+                .requestMatchers(HttpMethod.DELETE, "/api/shelters/**").hasRole("ADMIN")
+                .anyRequest().authenticated()
+            )
+            .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+
         return http.build();
     }
 }

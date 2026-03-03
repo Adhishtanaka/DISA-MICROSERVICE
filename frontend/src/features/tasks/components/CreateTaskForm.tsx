@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Input } from '../../../components/ui/Input';
 import { Button } from '../../../components/ui/Button';
 import { Select } from '../../../components/ui/Select';
+import { IncidentSelectField } from '../../../components/ui/IncidentSelectField';
 import type { TaskRequest } from '../types/task.types';
 
 const typeOptions = [
@@ -94,13 +95,10 @@ export function CreateTaskForm({ onCreate, onCancel }: CreateTaskFormProps) {
         required
       />
 
-      <Input
-        label="Incident ID (optional)"
-        type="number"
-        placeholder="Leave blank if not linked"
-        onChange={(e) =>
-          setForm((f) => ({ ...f, incidentId: e.target.value ? Number(e.target.value) : undefined }))
-        }
+      <IncidentSelectField
+        label="Incident"
+        value={form.incidentId}
+        onChange={(id) => setForm((f) => ({ ...f, incidentId: id }))}
       />
 
       {error && (

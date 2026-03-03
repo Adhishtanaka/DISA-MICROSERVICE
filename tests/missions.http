@@ -1,0 +1,75 @@
+### Mission Service Tests
+### PORT 8086
+
+@baseUrl = http://localhost:8086/missions
+
+@adminToken       = <ADMIN_TOKEN>
+@coordinatorToken = <COORDINATOR_TOKEN>
+@responderToken   = <RESPONDER_TOKEN>
+@volunteerToken   = <VOLUNTEER_TOKEN>
+
+### ── GET all missions — VOLUNTEER (allowed ✅) ──────────────
+GET {{baseUrl}}
+Authorization: Bearer {{volunteerToken}}
+
+### ── GET all missions — no token (expect 401 ❌) ────────────
+GET {{baseUrl}}
+
+### ── POST create mission — COORDINATOR (allowed ✅) ─────────
+POST {{baseUrl}}
+Content-Type: application/json
+Authorization: Bearer {{coordinatorToken}}
+
+{
+  "origin": "Warehouse A",
+  "destination": "District 4 Shelter",
+  "type": "SUPPLY_DELIVERY",
+  "vehicleType": "TRUCK",
+  "description": "Deliver emergency food supplies"
+}
+
+### ── POST create mission — RESPONDER (expect 403 ❌) ────────
+POST {{baseUrl}}
+Content-Type: application/json
+Authorization: Bearer {{responderToken}}
+
+{
+  "origin": "Base Camp",
+  "destination": "Flood Zone",
+  "type": "EVACUATION",
+  "description": "Should be rejected"
+}
+
+### ── GET mission by ID — VOLUNTEER (allowed ✅) ─────────────
+GET {{baseUrl}}/1
+Authorization: Bearer {{volunteerToken}}
+
+### ── PUT update status — RESPONDER (allowed ✅) ─────────────
+PUT {{baseUrl}}/1/status
+Content-Type: application/json
+Authorization: Bearer {{responderToken}}
+
+{
+  "status": "IN_PROGRESS"
+}
+
+### ── PUT update status — VOLUNTEER (expect 403 ❌) ──────────
+PUT {{baseUrl}}/1/status
+Content-Type: application/json
+Authorization: Bearer {{volunteerToken}}
+
+{
+  "status": "COMPLETED"
+}
+
+### ── GET missions by status ──────────────────────────────────
+GET {{baseUrl}}/status/PENDING
+Authorization: Bearer {{coordinatorToken}}
+
+### ── DELETE mission — ADMIN (allowed ✅) ────────────────────
+DELETE {{baseUrl}}/1
+Authorization: Bearer {{adminToken}}
+
+### ── DELETE mission — COORDINATOR (expect 403 ❌) ───────────
+DELETE {{baseUrl}}/1
+Authorization: Bearer {{coordinatorToken}}

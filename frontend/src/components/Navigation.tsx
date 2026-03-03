@@ -7,8 +7,8 @@ export function Navigation() {
   const { user, logout } = useAuthStore();
 
   const links = [
-    { path: "/missions", label: "Missions" },
     { path: "/incidents", label: "Incidents" },
+    { path: "/missions", label: "Missions" },
     { path: "/assessments", label: "Assessments" },
     { path: "/shelters", label: "Shelters" },
     { path: "/tasks", label: "Tasks" },
