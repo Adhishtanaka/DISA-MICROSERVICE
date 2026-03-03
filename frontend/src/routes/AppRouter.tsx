@@ -4,6 +4,7 @@ import { IncidentsPage } from "../features/incidents";
 import { AssessmentsPage } from "../features/assessments";
 import { SheltersPage } from "../features/shelters";
 import { TasksPage } from "../features/tasks";
+import { PersonnelPage } from "../features/personnel";
 import { LoginPage, RegisterPage, useAuthStore } from "../features/auth";
 import { Navigation } from "../components/Navigation";
 
@@ -76,6 +77,14 @@ export function AppRouter() {
           element={
             <ProtectedRoute>
               <AppLayout><TasksPage /></AppLayout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/personnel"
+          element={
+            <ProtectedRoute>
+              <AppLayout><PersonnelPage /></AppLayout>
             </ProtectedRoute>
           }
         />

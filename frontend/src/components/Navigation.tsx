@@ -12,6 +12,7 @@ export function Navigation() {
     { path: "/assessments", label: "Assessments" },
     { path: "/shelters", label: "Shelters" },
     { path: "/tasks", label: "Tasks" },
+    { path: "/personnel", label: "Personnel" },
   ];
 
   const handleLogout = () => {

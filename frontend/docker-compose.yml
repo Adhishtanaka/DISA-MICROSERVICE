@@ -288,7 +288,7 @@ services:
       RABBITMQ_USERNAME: guest
       RABBITMQ_PASSWORD: guest
       JWT_SECRET: dev-secret-key-change-in-production-at-least-32-chars
-      GEMINI_API_KEY: ${GEMINI_API_KEY:-placeholder-replace-with-real-key}
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-AIzaSyAo0evmab1eVs5B29nkYOBvLYz-iLvZ21w}
     depends_on:
       personnel-db:
         condition: service_healthy
@@ -313,6 +313,7 @@ services:
       SHELTER_SERVICE_URL: http://shelter-service:8085
       ASSESSMENT_SERVICE_URL: http://assessment-service:8087
       TASK_SERVICE_URL: http://task-service:8088
+      PERSONNEL_SERVICE_URL: http://personnel-service:8084
     depends_on:
       - auth-service
       - incident-service
@@ -321,6 +322,7 @@ services:
       - shelter-service
       - assessment-service
       - task-service
+      - personnel-service
     restart: on-failure
 
 volumes:
