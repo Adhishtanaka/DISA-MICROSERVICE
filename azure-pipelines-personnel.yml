@@ -16,7 +16,7 @@ variables:
   containerAppName: 'personnel-service'
 
 pool:
-  vmImage: 'ubuntu-latest'
+  name: 'Default'
 
 steps:
   # Step 1 - Build Docker image and push to ACR
