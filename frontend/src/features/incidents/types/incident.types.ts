@@ -32,3 +32,17 @@ export interface PaginatedResponse<T> {
   number: number;
   size: number;
 }
+
+export interface IncidentRequest {
+  type: IncidentType;
+  severity: Severity;
+  description: string;
+  latitude: number;
+  longitude: number;
+  address: string;
+}
+
+export interface EscalateRequest {
+  newSeverity: Severity;
+  reason?: string;
+}

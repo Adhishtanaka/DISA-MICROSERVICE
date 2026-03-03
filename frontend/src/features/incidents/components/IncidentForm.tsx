@@ -1,43 +1,51 @@
 import { useState } from "react";
-import type { IncidentStatus, IncidentType, Severity } from "../types/incident.types";
-
-type FormValues = {
-  type: IncidentType;
-  severity: Severity;
-  status: IncidentStatus;
-  description: string;
-  latitude: number;
-  longitude: number;
-  address: string;
-};
+import type { IncidentRequest, IncidentType, Severity } from "../types/incident.types";
 
 type Props = {
-  onSubmit?: (values: FormValues) => void;
+  onSubmit: (values: IncidentRequest) => Promise<void>;
 };
 
 export default function IncidentForm({ onSubmit }: Props) {
-  const [values, setValues] = useState<FormValues>({
+  const [values, setValues] = useState<IncidentRequest>({
     type: "FLOOD",
     severity: "MEDIUM",
-    status: "REPORTED",
     description: "",
     latitude: 6.9271,
     longitude: 79.8612,
     address: "",
   });
+  const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
-  function set<K extends keyof FormValues>(key: K, val: FormValues[K]) {
+  function set<K extends keyof IncidentRequest>(key: K, val: IncidentRequest[K]) {
     setValues((p) => ({ ...p, [key]: val }));
+  }
+
+  async function handleSubmit() {
+    if (!values.description.trim() || !values.address.trim()) {
+      setSubmitError("Description and address are required.");
+      return;
+    }
+    setSubmitError(null);
+    setSubmitting(true);
+    try {
+      await onSubmit(values);
+      setValues({ type: "FLOOD", severity: "MEDIUM", description: "", latitude: 6.9271, longitude: 79.8612, address: "" });
+    } catch {
+      setSubmitError("Failed to create incident. Please try again.");
+    } finally {
+      setSubmitting(false);
+    }
   }
 
   return (
     <div style={panelStyle}>
-      <div style={{ fontSize: 18, fontWeight: 800, marginBottom: 10 }}>Create Incident (UI)</div>
+      <div style={{ fontSize: 18, fontWeight: 800, marginBottom: 10 }}>Create Incident</div>
 
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 10 }}>
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
         <label style={labelStyle}>
           Type
-          <select value={values.type} onChange={(e) => set("type", e.target.value as any)} style={inputStyle}>
+          <select value={values.type} onChange={(e) => set("type", e.target.value as IncidentType)} style={inputStyle}>
             <option value="EARTHQUAKE">EARTHQUAKE</option>
             <option value="FLOOD">FLOOD</option>
             <option value="FIRE">FIRE</option>
@@ -50,20 +58,11 @@ export default function IncidentForm({ onSubmit }: Props) {
 
         <label style={labelStyle}>
           Severity
-          <select value={values.severity} onChange={(e) => set("severity", e.target.value as any)} style={inputStyle}>
+          <select value={values.severity} onChange={(e) => set("severity", e.target.value as Severity)} style={inputStyle}>
             <option value="LOW">LOW</option>
             <option value="MEDIUM">MEDIUM</option>
             <option value="HIGH">HIGH</option>
             <option value="CRITICAL">CRITICAL</option>
-          </select>
-        </label>
-
-        <label style={labelStyle}>
-          Status
-          <select value={values.status} onChange={(e) => set("status", e.target.value as any)} style={inputStyle}>
-            <option value="REPORTED">REPORTED</option>
-            <option value="ACTIVE">ACTIVE</option>
-            <option value="RESOLVED">RESOLVED</option>
           </select>
         </label>
       </div>
@@ -111,26 +110,30 @@ export default function IncidentForm({ onSubmit }: Props) {
         />
       </label>
 
+      {submitError && (
+        <div style={{ marginTop: 8, color: "#dc2626", fontSize: 13 }}>{submitError}</div>
+      )}
+
       <div style={{ marginTop: 12, display: "flex", gap: 10 }}>
         <button
-          onClick={() => onSubmit?.(values)}
+          onClick={handleSubmit}
+          disabled={submitting}
           style={{
             padding: "10px 14px",
             borderRadius: 12,
-            background: "#2563eb",
+            background: submitting ? "#93c5fd" : "#2563eb",
             color: "white",
             fontWeight: 800,
             border: "none",
-            cursor: "pointer",
+            cursor: submitting ? "not-allowed" : "pointer",
           }}
         >
-          Submit (UI)
+          {submitting ? "Creating..." : "Create Incident"}
         </button>
 
         <button
-          onClick={() =>
-            setValues((v) => ({ ...v, description: "", address: "" }))
-          }
+          onClick={() => setValues((v) => ({ ...v, description: "", address: "" }))}
+          disabled={submitting}
           style={{
             padding: "10px 14px",
             borderRadius: 12,
