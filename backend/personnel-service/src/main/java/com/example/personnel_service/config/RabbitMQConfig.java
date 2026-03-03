@@ -53,6 +53,9 @@ public class RabbitMQConfig {
      * Routing key for personnel availability events.
      */
     public static final String PERSONNEL_AVAILABLE_KEY = "personnel.available";
+
+    public static final String USER_REGISTERED_QUEUE = "personnel.user.registered.queue";
+    public static final String USER_REGISTERED_KEY = "user.registered";
     
     /**
      * Creates the main topic exchange for disaster management events.
@@ -110,6 +113,19 @@ public class RabbitMQConfig {
             .with(PERSONNEL_STATUS_KEY);
     }
     
+    @Bean
+    public Queue userRegisteredQueue() {
+        return new Queue(USER_REGISTERED_QUEUE, true);
+    }
+
+    @Bean
+    public Binding userRegisteredBinding() {
+        return BindingBuilder
+            .bind(userRegisteredQueue())
+            .to(exchange())
+            .with(USER_REGISTERED_KEY);
+    }
+
     /**
      * Creates JSON message converter for automatic serialization/deserialization.
      * 
