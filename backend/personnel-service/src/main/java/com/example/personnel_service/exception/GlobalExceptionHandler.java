@@ -170,14 +170,18 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(HttpMessageNotReadableException.class)
     public ResponseEntity<ErrorResponse> handleHttpMessageNotReadableException(
             HttpMessageNotReadableException ex, HttpServletRequest request) {
-        
+
+        String detail = ex.getMostSpecificCause() != null
+                ? ex.getMostSpecificCause().getMessage()
+                : ex.getMessage();
+
         ErrorResponse errorResponse = new ErrorResponse(
                 HttpStatus.BAD_REQUEST.value(),
                 HttpStatus.BAD_REQUEST.getReasonPhrase(),
-                "Malformed JSON request or invalid request body",
+                "Malformed JSON request or invalid request body: " + detail,
                 request.getRequestURI()
         );
-        
+
         return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
     }
 
