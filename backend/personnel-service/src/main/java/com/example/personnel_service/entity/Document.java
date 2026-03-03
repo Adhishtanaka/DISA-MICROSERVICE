@@ -1,5 +1,6 @@
 package com.example.personnel_service.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -33,6 +34,7 @@ public class Document {
     private String issuedBy;
 
 
+    @JsonIgnore
     @ManyToOne
     @JoinColumn(name = "injury_history_id")
     private InjuryHistory injuryHistory;

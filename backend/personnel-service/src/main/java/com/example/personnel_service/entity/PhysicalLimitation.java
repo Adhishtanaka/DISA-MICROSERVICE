@@ -1,5 +1,6 @@
 package com.example.personnel_service.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -12,7 +13,7 @@ import java.time.LocalDateTime;
 /**
  * Entity representing physical limitations of personnel.
  * Tracks physical constraints that may affect task assignments.
- * 
+ *
  * @author DISA Team
  * @version 1.0
  * @since 2026-02-21
@@ -27,6 +28,7 @@ public class PhysicalLimitation {
 
     private String limitation;
 
+    @JsonIgnore
     @ManyToOne
     @JoinColumn(name = "medical_condition_id")
     private MedicalCondition medicalCondition;

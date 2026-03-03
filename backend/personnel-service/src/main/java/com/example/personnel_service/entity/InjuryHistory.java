@@ -1,6 +1,6 @@
 package com.example.personnel_service.entity;
 
-import com.example.personnel_service.dto.DocumentDto;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -36,6 +36,7 @@ public class InjuryHistory {
     @OneToMany(mappedBy = "injuryHistory", cascade = CascadeType.ALL)
     private List<Document> pastDocuments;
 
+    @JsonIgnore
     @ManyToOne
     @JoinColumn(name = "medical_condition_id")
     private MedicalCondition medicalCondition;

@@ -1,5 +1,6 @@
 package com.example.personnel_service.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -12,7 +13,7 @@ import java.time.LocalDateTime;
 /**
  * Entity representing a chronic medical condition of personnel.
  * Tracks long-term health conditions and their severity levels.
- * 
+ *
  * @author DISA Team
  * @version 1.0
  * @since 2026-02-21
@@ -28,6 +29,7 @@ public class ChronicCondition {
     private String name;
     private String severity;
 
+    @JsonIgnore
     @ManyToOne
     @JoinColumn(name = "medical_condition_id")
     private MedicalCondition medicalCondition;

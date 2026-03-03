@@ -1,5 +1,6 @@
 package com.example.personnel_service.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -12,7 +13,7 @@ import java.time.LocalDateTime;
 /**
  * Entity representing medication information for personnel.
  * Tracks medication name, dosage, frequency, and treatment status.
- * 
+ *
  * @author DISA Team
  * @version 1.0
  * @since 2026-02-21
@@ -37,6 +38,7 @@ public class Medication {
 
     private boolean isDisabled;
 
+    @JsonIgnore
     @ManyToOne
     @JoinColumn(name = "medical_condition_id")
     private MedicalCondition medicalCondition;
