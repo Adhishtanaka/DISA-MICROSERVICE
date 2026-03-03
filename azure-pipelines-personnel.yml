@@ -1,0 +1,47 @@
+# CI/CD Pipeline for personnel-service
+# Triggers only when backend/personnel-service changes on main branch
+
+trigger:
+  branches:
+    include:
+      - main
+  paths:
+    include:
+      - backend/personnel-service/**
+
+variables:
+  imageName: 'personnel-service'
+  acrName: 'disaregistry123'
+  resourceGroup: 'disa-rg'
+  containerAppName: 'personnel-service'
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+steps:
+  # Step 1 - Build Docker image and push to ACR
+  # (Maven build happens inside Dockerfile multi-stage build)
+  - task: Docker@2
+    displayName: 'Build and Push Docker Image'
+    inputs:
+      command: 'buildAndPush'
+      repository: '$(imageName)'
+      dockerfile: 'backend/personnel-service/Dockerfile'
+      buildContext: 'backend/personnel-service'
+      containerRegistry: 'ACR-Service-Connection'
+      tags: |
+        $(Build.BuildId)
+        latest
+
+  # Step 2 - Deploy to Azure Container Apps
+  - task: AzureCLI@2
+    displayName: 'Deploy to Container Apps'
+    inputs:
+      azureSubscription: 'Azure-Service-Connection'
+      scriptType: 'bash'
+      scriptLocation: 'inlineScript'
+      inlineScript: |
+        az containerapp update \
+          --name $(containerAppName) \
+          --resource-group $(resourceGroup) \
+          --image $(acrName).azurecr.io/$(imageName):$(Build.BuildId)
