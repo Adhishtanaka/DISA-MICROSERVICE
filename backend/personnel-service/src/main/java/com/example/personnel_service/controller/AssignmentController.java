@@ -1,5 +1,6 @@
 package com.example.personnel_service.controller;
 
+import com.example.personnel_service.dto.AssignmentHistoryDto;
 import com.example.personnel_service.dto.PersonDto;
 import com.example.personnel_service.dto.TaskAssignmentDto;
 import com.example.personnel_service.dto.TaskDto;
@@ -9,12 +10,13 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * REST controller for managing task assignments to personnel.
  * Provides endpoints for matching tasks to suitable personnel using AI-powered algorithms.
  * Base path: /api/personnel/assignments
- * 
+ *
  * @author DISA Team
  * @version 1.0
  * @since 2026-02-21
@@ -65,12 +67,13 @@ public class AssignmentController {
      * @return ResponseEntity containing the TaskAssignmentDto with matched person details
      */
     @PostMapping("/match-task")
-    public ResponseEntity<TaskAssignmentDto> matchTaskToPerson(@RequestBody TaskDto task) {
+    public ResponseEntity<?> matchTaskToPerson(@RequestBody TaskDto task) {
         try {
             TaskAssignmentDto assignment = assignmentService.matchTaskToPerson(task);
             return ResponseEntity.ok(assignment);
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", "Assignment failed", "message", e.getMessage() != null ? e.getMessage() : "Unknown error"));
         }
     }
 
@@ -78,16 +81,38 @@ public class AssignmentController {
      * Matches all pending tasks to suitable persons using Gemini AI.
      * Processes all pending tasks and creates optimal assignments based on AI recommendations.
      * POST /api/personnel/assignments/match-all-pending
-     * 
+     *
      * @return ResponseEntity containing a list of TaskAssignmentDto objects with matched assignments
      */
     @PostMapping("/match-all-pending")
-    public ResponseEntity<List<TaskAssignmentDto>> matchAllPendingTasks() {
+    public ResponseEntity<?> matchAllPendingTasks() {
         try {
             List<TaskAssignmentDto> assignments = assignmentService.matchAllPendingTasks();
             return ResponseEntity.ok(assignments);
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", "Batch assignment failed", "message", e.getMessage() != null ? e.getMessage() : "Unknown error"));
+        }
+    }
+
+    @GetMapping("/history/{personId}")
+    public ResponseEntity<List<AssignmentHistoryDto>> getAssignmentHistory(@PathVariable Long personId) {
+        return ResponseEntity.ok(assignmentService.getAssignmentHistory(personId));
+    }
+
+    @GetMapping("/active/{personId}")
+    public ResponseEntity<List<AssignmentHistoryDto>> getActiveAssignments(@PathVariable Long personId) {
+        return ResponseEntity.ok(assignmentService.getActiveAssignments(personId));
+    }
+
+    @PutMapping("/{assignmentId}/complete")
+    public ResponseEntity<?> completeAssignment(@PathVariable Long assignmentId) {
+        try {
+            AssignmentHistoryDto completed = assignmentService.completeAssignment(assignmentId);
+            return ResponseEntity.ok(completed);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", "Complete failed", "message", e.getMessage() != null ? e.getMessage() : "Unknown error"));
         }
     }
 }
