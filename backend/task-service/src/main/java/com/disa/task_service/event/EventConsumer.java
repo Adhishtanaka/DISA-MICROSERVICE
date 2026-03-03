@@ -32,4 +32,26 @@ public class EventConsumer {
         // Auto-create follow-up tasks based on required actions
         taskService.createTasksFromAssessment(event.getPayload());
     }
+
+    @RabbitListener(queues = RabbitMQConfig.PERSONNEL_STATUS_QUEUE)
+    public void handlePersonnelStatusChanged(PersonnelStatusEvent event) {
+        try {
+            log.info("Received personnel.status.changed event: personnelId={}, status={}, available={}",
+                    event.getPayload().getPersonnelId(),
+                    event.getPayload().getStatus(),
+                    event.getPayload().getIsAvailable());
+
+            if (Boolean.FALSE.equals(event.getPayload().getIsAvailable())) {
+                log.warn("Personnel {} ({}) is now UNAVAILABLE. Check IN_PROGRESS tasks assigned to this person.",
+                        event.getPayload().getPersonnelCode(),
+                        event.getPayload().getFullName());
+            } else {
+                log.info("Personnel {} ({}) is now AVAILABLE for task assignment.",
+                        event.getPayload().getPersonnelCode(),
+                        event.getPayload().getFullName());
+            }
+        } catch (Exception e) {
+            log.error("Failed to process personnel.status.changed event: {}", e.getMessage(), e);
+        }
+    }
 }

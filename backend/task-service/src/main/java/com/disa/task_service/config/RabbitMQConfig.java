@@ -21,9 +21,12 @@ public class RabbitMQConfig {
     public static final String ASSESSMENT_COMPLETED_QUEUE = "assessment.completed.queue";
     public static final String TASK_ASSIGNED_QUEUE = "task.assigned.queue";
 
+    public static final String PERSONNEL_STATUS_QUEUE = "task.personnel.status.queue";
+
     // Routing keys
     public static final String ASSESSMENT_COMPLETED_KEY = "assessment.completed";
     public static final String TASK_ASSIGNED_KEY = "task.assigned";
+    public static final String PERSONNEL_STATUS_KEY = "personnel.status.changed";
 
     /**
      * Declares the shared topic exchange used by all disaster microservices.
@@ -81,6 +84,19 @@ public class RabbitMQConfig {
             .bind(taskAssignedQueue())
             .to(exchange())
             .with(TASK_ASSIGNED_KEY);
+    }
+
+    @Bean
+    public Queue personnelStatusQueue() {
+        return new Queue(PERSONNEL_STATUS_QUEUE, true);
+    }
+
+    @Bean
+    public Binding personnelStatusBinding() {
+        return BindingBuilder
+            .bind(personnelStatusQueue())
+            .to(exchange())
+            .with(PERSONNEL_STATUS_KEY);
     }
 
     /**
