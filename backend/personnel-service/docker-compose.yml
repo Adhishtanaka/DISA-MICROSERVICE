@@ -28,7 +28,7 @@ services:
       RABBITMQ_USERNAME: ${RABBITMQ_USERNAME:-guest}
       RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD:-guest}
       JWT_SECRET: dev-secret-key-change-in-production-at-least-32-chars
-      GEMINI_API_KEY: ${GEMINI_API_KEY:-placeholder-replace-with-real-key}
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-asdjnfgkjngkjn}
     depends_on:
       postgres:
         condition: service_healthy

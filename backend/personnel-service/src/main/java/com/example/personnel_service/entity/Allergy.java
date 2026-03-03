@@ -1,5 +1,6 @@
 package com.example.personnel_service.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -29,6 +30,7 @@ public class Allergy {
     private String type;
     private String allergyTo;
 
+    @JsonIgnore
     @ManyToOne
     @JoinColumn(name = "medical_condition_id")
     private MedicalCondition medicalCondition;

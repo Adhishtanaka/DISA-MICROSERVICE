@@ -1,0 +1,336 @@
+# Full-stack deployment: 1 RabbitMQ + 8 backend services + 8 databases + frontend
+# Run from project root: docker compose up --build -d
+
+services:
+
+  # ── Shared Message Broker ────────────────────────────────────────────────────
+
+  rabbitmq:
+    image: rabbitmq:3.13-management-alpine
+    container_name: disa-rabbitmq
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ── Databases (one per service) ──────────────────────────────────────────────
+
+  auth-db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: auth_db
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  incident-db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: incident_db
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  mission-db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: mission_db
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  resource-db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: resource_db
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  shelter-db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: shelter_db
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  assessment-db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: assessment_db
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  task-db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: task_db
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  personnel-db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: personnel_service
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ── Backend Services ─────────────────────────────────────────────────────────
+
+  auth-service:
+    build:
+      context: ./backend/auth-service
+      dockerfile: Dockerfile
+    ports:
+      - "8081:8081"
+    environment:
+      DB_URL: jdbc:postgresql://auth-db:5432/auth_db
+      DB_USERNAME: postgres
+      DB_PASSWORD: postgres
+      JWT_SECRET: dev-secret-key-change-in-production-at-least-32-chars
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_PORT: 5672
+      RABBITMQ_USERNAME: guest
+      RABBITMQ_PASSWORD: guest
+    depends_on:
+      auth-db:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    restart: on-failure
+
+  incident-service:
+    build:
+      context: ./backend/incident-service
+      dockerfile: Dockerfile
+    ports:
+      - "8083:8083"
+    environment:
+      DB_URL: jdbc:postgresql://incident-db:5432/incident_db
+      DB_USERNAME: postgres
+      DB_PASSWORD: postgres
+      JWT_SECRET: dev-secret-key-change-in-production-at-least-32-chars
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_PORT: 5672
+      RABBITMQ_USERNAME: guest
+      RABBITMQ_PASSWORD: guest
+    depends_on:
+      incident-db:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    restart: on-failure
+
+  mission-service:
+    build:
+      context: ./backend/mission-service
+      dockerfile: Dockerfile
+    ports:
+      - "8086:8086"
+    environment:
+      DB_URL: jdbc:postgresql://mission-db:5432/mission_db
+      DB_USERNAME: postgres
+      DB_PASSWORD: postgres
+      JWT_SECRET: dev-secret-key-change-in-production-at-least-32-chars
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_PORT: 5672
+      RABBITMQ_USERNAME: guest
+      RABBITMQ_PASSWORD: guest
+      RABBITMQ_VIRTUAL_HOST: /
+    depends_on:
+      mission-db:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    restart: on-failure
+
+  resource-service:
+    build:
+      context: ./backend/resource-service
+      dockerfile: Dockerfile
+    ports:
+      - "8089:8089"
+    environment:
+      DB_URL: jdbc:postgresql://resource-db:5432/resource_db
+      DB_USERNAME: postgres
+      DB_PASSWORD: postgres
+      JWT_SECRET: dev-secret-key-change-in-production-at-least-32-chars
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_PORT: 5672
+      RABBITMQ_USERNAME: guest
+      RABBITMQ_PASSWORD: guest
+    depends_on:
+      resource-db:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    restart: on-failure
+
+  shelter-service:
+    build:
+      context: ./backend/shelter-service
+      dockerfile: Dockerfile
+    ports:
+      - "8085:8085"
+    environment:
+      DB_URL: jdbc:postgresql://shelter-db:5432/shelter_db
+      DB_USERNAME: postgres
+      DB_PASSWORD: postgres
+      JWT_SECRET: dev-secret-key-change-in-production-at-least-32-chars
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_PORT: 5672
+      RABBITMQ_USERNAME: guest
+      RABBITMQ_PASSWORD: guest
+    depends_on:
+      shelter-db:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    restart: on-failure
+
+  assessment-service:
+    build:
+      context: ./backend/assessment-service
+      dockerfile: Dockerfile
+    ports:
+      - "8087:8087"
+    environment:
+      DB_URL: jdbc:postgresql://assessment-db:5432/assessment_db
+      DB_USERNAME: postgres
+      DB_PASSWORD: postgres
+      JWT_SECRET: dev-secret-key-change-in-production-at-least-32-chars
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_PORT: 5672
+      RABBITMQ_USERNAME: guest
+      RABBITMQ_PASSWORD: guest
+    volumes:
+      - assessment_uploads:/app/uploads
+    depends_on:
+      assessment-db:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    restart: on-failure
+
+  task-service:
+    build:
+      context: ./backend/task-service
+      dockerfile: Dockerfile
+    ports:
+      - "8088:8088"
+    environment:
+      DB_URL: jdbc:postgresql://task-db:5432/task_db
+      DB_USERNAME: postgres
+      DB_PASSWORD: postgres
+      JWT_SECRET: dev-secret-key-change-in-production-at-least-32-chars
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_PORT: 5672
+      RABBITMQ_USERNAME: guest
+      RABBITMQ_PASSWORD: guest
+    depends_on:
+      task-db:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    restart: on-failure
+
+  personnel-service:
+    build:
+      context: ./backend/personnel-service
+      dockerfile: Dockerfile
+    ports:
+      - "8084:8084"
+    environment:
+      DB_HOST: personnel-db
+      DB_PORT: 5432
+      DB_NAME: personnel_service
+      DB_USERNAME: postgres
+      DB_PASSWORD: postgres
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_PORT: 5672
+      RABBITMQ_USERNAME: guest
+      RABBITMQ_PASSWORD: guest
+      JWT_SECRET: dev-secret-key-change-in-production-at-least-32-chars
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-AIzaSyAo0evmab1eVs5B29nkYOBvLYz-iLvZ21w}
+      GEMINI_API_URL: ${GEMINI_API_URL:-https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent}
+      TASK_API_URL: http://task-service:8088/api/v1
+    depends_on:
+      personnel-db:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    restart: on-failure
+
+  # ── Frontend ─────────────────────────────────────────────────────────────────
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "80:80"
+    environment:
+      AUTH_SERVICE_URL: http://auth-service:8081
+      INCIDENT_SERVICE_URL: http://incident-service:8083
+      MISSION_SERVICE_URL: http://mission-service:8086
+      RESOURCE_SERVICE_URL: http://resource-service:8089
+      SHELTER_SERVICE_URL: http://shelter-service:8085
+      ASSESSMENT_SERVICE_URL: http://assessment-service:8087
+      TASK_SERVICE_URL: http://task-service:8088
+      PERSONNEL_SERVICE_URL: http://personnel-service:8084
+    depends_on:
+      - auth-service
+      - incident-service
+      - mission-service
+      - resource-service
+      - shelter-service
+      - assessment-service
+      - task-service
+      - personnel-service
+    restart: on-failure
+
+volumes:
+  assessment_uploads:
