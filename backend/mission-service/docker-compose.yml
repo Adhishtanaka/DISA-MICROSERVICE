@@ -26,6 +26,7 @@ services:
       RABBITMQ_USERNAME: ${RABBITMQ_USERNAME:-guest}
       RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD:-guest}
       RABBITMQ_VIRTUAL_HOST: /
+      INCIDENT_SERVICE_URL: ${INCIDENT_SERVICE_URL:-http://localhost:8083}
     depends_on:
       postgres:
         condition: service_healthy
