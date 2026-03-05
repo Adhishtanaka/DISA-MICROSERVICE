@@ -34,5 +34,6 @@ build/
 
 ### Environment Variables ###
 .env
+docker-compose.yml
 .env.local
 .env.*.local
