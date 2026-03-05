@@ -3,7 +3,7 @@
 
 name: Deploy Shelter Service
 
-on:
+"on":
   push:
     branches:
       - main
