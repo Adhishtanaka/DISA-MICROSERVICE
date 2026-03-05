@@ -26,6 +26,7 @@ spring:
     listener:
       simple:
         missing-queues-fatal: false
+        auto-startup: false
         retry:
           enabled: true
           initial-interval: 3000
