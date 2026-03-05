@@ -49,7 +49,31 @@ jobs:
 
       - name: Deploy to Container Apps
         run: |
-          az containerapp update \
-            --name ${{ env.CONTAINER_APP_NAME }} \
-            --resource-group ${{ env.RESOURCE_GROUP }} \
-            --image ${{ env.ACR_NAME }}.azurecr.io/${{ env.IMAGE_NAME }}:${{ github.run_number }}
+          if az containerapp show --name ${{ env.CONTAINER_APP_NAME }} --resource-group ${{ env.RESOURCE_GROUP }} &> /dev/null; then
+            az containerapp update \
+              --name ${{ env.CONTAINER_APP_NAME }} \
+              --resource-group ${{ env.RESOURCE_GROUP }} \
+              --image ${{ env.ACR_NAME }}.azurecr.io/${{ env.IMAGE_NAME }}:${{ github.run_number }}
+          else
+            az containerapp create \
+              --name ${{ env.CONTAINER_APP_NAME }} \
+              --resource-group ${{ env.RESOURCE_GROUP }} \
+              --environment disa-env \
+              --image ${{ env.ACR_NAME }}.azurecr.io/${{ env.IMAGE_NAME }}:${{ github.run_number }} \
+              --target-port 8085 \
+              --ingress external \
+              --min-replicas 0 \
+              --max-replicas 2 \
+              --registry-server ${{ env.ACR_NAME }}.azurecr.io \
+              --registry-username ${{ secrets.SHELTER_ACR_USERNAME }} \
+              --registry-password ${{ secrets.SHELTER_ACR_PASSWORD }} \
+              --env-vars \
+                DB_URL="jdbc:postgresql://disa-shelter-db.postgres.database.azure.com:5432/shelter_db?sslmode=require" \
+                DB_USERNAME="postgres" \
+                DB_PASSWORD="DisaPostgres2026" \
+                RABBITMQ_HOST="20.252.18.55" \
+                RABBITMQ_PORT="5672" \
+                RABBITMQ_USERNAME="guest" \
+                RABBITMQ_PASSWORD="guest" \
+                JWT_SECRET="dev-secret-key-change-in-production-at-least-32-chars"
+          fi
