@@ -55,7 +55,10 @@ public class RabbitMQConfig {
         factory.setUsername(rabbitUsername);
         factory.setPassword(rabbitPassword);
         factory.getRabbitConnectionFactory().setConnectionTimeout(5000);
+        factory.getRabbitConnectionFactory().setHandshakeTimeout(10000);
         factory.getRabbitConnectionFactory().setRequestedHeartbeat(30);
+        factory.getRabbitConnectionFactory().setAutomaticRecoveryEnabled(true);
+        factory.getRabbitConnectionFactory().setNetworkRecoveryInterval(5000);
         return factory;
     }
 

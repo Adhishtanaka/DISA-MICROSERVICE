@@ -25,6 +25,7 @@ spring:
     connection-timeout: 5000
     listener:
       simple:
+        missing-queues-fatal: false
         retry:
           enabled: true
           initial-interval: 3000
