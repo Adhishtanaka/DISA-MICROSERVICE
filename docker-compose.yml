@@ -157,6 +157,7 @@ services:
       RABBITMQ_PORT: 5672
       RABBITMQ_USERNAME: guest
       RABBITMQ_PASSWORD: guest
+      RABBITMQ_VIRTUAL_HOST: /
     depends_on:
       incident-db:
         condition: service_healthy
@@ -180,6 +181,7 @@ services:
       RABBITMQ_USERNAME: guest
       RABBITMQ_PASSWORD: guest
       RABBITMQ_VIRTUAL_HOST: /
+      INCIDENT_SERVICE_URL: http://incident-service:8083
     depends_on:
       mission-db:
         condition: service_healthy
