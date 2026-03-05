@@ -24,3 +24,12 @@ spring:
 
 jwt:
   secret: ${JWT_SECRET:dev-secret-key-change-in-production-at-least-32-chars}
+
+server:
+  forward-headers-strategy: framework
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+  api-docs:
+    path: /v3/api-docs
