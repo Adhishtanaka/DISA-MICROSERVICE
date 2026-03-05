@@ -58,7 +58,7 @@ jobs:
             az containerapp create \
               --name ${{ env.CONTAINER_APP_NAME }} \
               --resource-group ${{ env.RESOURCE_GROUP }} \
-              --environment disa-env \
+              --environment disa-env-2 \
               --image ${{ env.ACR_NAME }}.azurecr.io/${{ env.IMAGE_NAME }}:${{ github.run_number }} \
               --target-port 8085 \
               --ingress external \
