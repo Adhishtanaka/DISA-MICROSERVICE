@@ -7,6 +7,7 @@ import { TasksPage } from "../features/tasks";
 import { PersonnelPage } from "../features/personnel";
 import { LoginPage, RegisterPage, useAuthStore } from "../features/auth";
 import { Navigation } from "../components/Navigation";
+import { ResourcesPage } from "@/features/resources";
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
@@ -85,6 +86,14 @@ export function AppRouter() {
           element={
             <ProtectedRoute>
               <AppLayout><PersonnelPage /></AppLayout>
+            </ProtectedRoute>
+          }
+        />
+                <Route
+          path="/resources"
+          element={
+            <ProtectedRoute>
+              <AppLayout><ResourcesPage /></AppLayout>
             </ProtectedRoute>
           }
         />
