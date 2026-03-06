@@ -18,6 +18,7 @@ services:
     ports:
       - "8085:8085"
     environment:
+    
       DB_URL: jdbc:postgresql://postgres:5432/shelter_db
       DB_USERNAME: postgres
       DB_PASSWORD: postgres
@@ -25,6 +26,7 @@ services:
       RABBITMQ_PORT: ${RABBITMQ_PORT:-5672}
       RABBITMQ_USERNAME: ${RABBITMQ_USERNAME:-guest}
       RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD:-guest}
+      JWT_SECRET: dev-secret-key-change-in-production-at-least-32-chars
     depends_on:
       postgres:
         condition: service_healthy
