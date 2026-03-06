@@ -16,7 +16,7 @@ export function usePersonnel() {
     setError(null);
     try {
       const data = await personnelApi.getAll();
-      setPersonnel(data);
+      setPersonnel(Array.isArray(data) ? data : []);
     } catch {
       setError('Failed to load personnel');
     } finally {
