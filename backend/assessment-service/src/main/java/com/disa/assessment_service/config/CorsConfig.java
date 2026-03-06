@@ -1,6 +1,5 @@
 package com.disa.assessment_service.config;
 
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.cors.CorsConfiguration;
@@ -13,16 +12,12 @@ import java.util.List;
 @Configuration
 public class CorsConfig {
 
-    @Value("${cors.allowed-origins:http://20.252.18.55,http://localhost:5173,http://localhost:3000}")
-    private String allowedOriginsRaw;
-
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
         config.setAllowCredentials(true);
 
-        List<String> origins = Arrays.asList(allowedOriginsRaw.split(","));
-        config.setAllowedOrigins(origins);
+        config.setAllowedOriginPatterns(List.of("*"));
 
         config.setAllowedHeaders(Arrays.asList("*"));
         config.setExposedHeaders(Arrays.asList("Authorization", "Content-Type"));
