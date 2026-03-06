@@ -16,9 +16,11 @@
 package com.disa.shelter_service.config;
 
 import org.springframework.amqp.core.*;
+import org.springframework.amqp.rabbit.connection.CachingConnectionFactory;
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -32,6 +34,33 @@ public class RabbitMQConfig {
 
     // Routing keys
     public static final String INCIDENT_CREATED_KEY = "incident.created";
+
+    @Value("${spring.rabbitmq.host:localhost}")
+    private String rabbitHost;
+
+    @Value("${spring.rabbitmq.port:5672}")
+    private int rabbitPort;
+
+    @Value("${spring.rabbitmq.username:guest}")
+    private String rabbitUsername;
+
+    @Value("${spring.rabbitmq.password:guest}")
+    private String rabbitPassword;
+
+    @Bean
+    public ConnectionFactory connectionFactory() {
+        CachingConnectionFactory factory = new CachingConnectionFactory();
+        factory.setHost(rabbitHost);
+        factory.setPort(rabbitPort);
+        factory.setUsername(rabbitUsername);
+        factory.setPassword(rabbitPassword);
+        factory.getRabbitConnectionFactory().setConnectionTimeout(5000);
+        factory.getRabbitConnectionFactory().setHandshakeTimeout(10000);
+        factory.getRabbitConnectionFactory().setRequestedHeartbeat(30);
+        factory.getRabbitConnectionFactory().setAutomaticRecoveryEnabled(true);
+        factory.getRabbitConnectionFactory().setNetworkRecoveryInterval(5000);
+        return factory;
+    }
 
     @Bean
     public TopicExchange exchange() {

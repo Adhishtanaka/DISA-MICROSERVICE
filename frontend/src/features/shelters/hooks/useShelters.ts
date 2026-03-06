@@ -18,7 +18,7 @@ export function useShelters(availableOnly = false) {
       const data = availableOnly 
         ? await shelterApi.getAvailable() 
         : await shelterApi.getAll();
-      setShelters(data);
+      setShelters(Array.isArray(data) ? data : []);
     } catch (err) {
       setError("Failed to load shelters");
       console.error(err);

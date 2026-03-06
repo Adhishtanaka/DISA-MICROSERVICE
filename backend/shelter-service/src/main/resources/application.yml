@@ -1,5 +1,6 @@
 server:
   port: 8085
+  forward-headers-strategy: framework
 
 spring:
   application:
@@ -21,6 +22,22 @@ spring:
     port: ${RABBITMQ_PORT:5672}
     username: ${RABBITMQ_USERNAME:guest}
     password: ${RABBITMQ_PASSWORD:guest}
+    connection-timeout: 5000
+    listener:
+      simple:
+        missing-queues-fatal: false
+        auto-startup: false
+        retry:
+          enabled: true
+          initial-interval: 3000
+          max-attempts: 5
+          multiplier: 2
 
 jwt:
   secret: ${JWT_SECRET:dev-secret-key-change-in-production-at-least-32-chars}
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+  api-docs:
+    path: /v3/api-docs
